@@ -1,0 +1,93 @@
+== advanced.sql ==
+
+--- cte_pharmacy_stock_summary ---
+purpose: Per-pharmacy stock totals and low-stock counts, then ranked by risk (most low items first).
+why: ordinary (non-recursive) CTE feeding a window function RANK().
+expected: Three rows; Lakeside ranks 1 (6 low/out items, 132 units), Green Cross 2, City Care 3.
+> WITH cte_pharmacy_stock_summary AS ( SELECT p.id, p.name, COUNT(*) AS items, SUM(i.quantity) AS total_units, SUM(i.quantity <= i.reorder_level) AS low_items FRO
+  pharmacy | items | total_units | low_items | risk_rank
+  Lakeside Pharmacy | 9 | 132 | 6 | 1
+  Green Cross Pharmacy | 13 | 327 | 5 | 2
+  City Care Pharmacy | 15 | 653 | 5 | 3
+
+--- cte_category_tree ---
+purpose: The whole medicine-category tree with depth and full path (also served by GET /categories/tree).
+why: RECURSIVE CTE over the self-referencing table medicine_categories.
+expected: 12 rows: Pharmaceuticals (depth 0) down to 3-level leaves such as 'Pharmaceuticals > Analgesics > NSAIDs'.
+> WITH RECURSIVE cte_category_tree AS ( SELECT id, name, parent_id, 0 AS depth, CAST(name AS CHAR(500)) AS path FROM medicine_categories WHERE parent_id IS NULL U
+  id | name | parent_id | depth | path
+  1 | Pharmaceuticals | NULL | 0 | Pharmaceuticals
+  2 | Analgesics | 1 | 1 | Pharmaceuticals > Analgesics
+  3 | Antipyretic analgesics | 2 | 2 | Pharmaceuticals > Analgesics > Antipyretic analgesics
+  4 | NSAIDs | 2 | 2 | Pharmaceuticals > Analgesics > NSAIDs
+  5 | Anti-infectives | 1 | 1 | Pharmaceuticals > Anti-infectives
+  6 | Antibiotics | 5 | 2 | Pharmaceuticals > Anti-infectives > Antibiotics
+  11 | Antidiabetics | 1 | 1 | Pharmaceuticals > Antidiabetics
+  12 | Biguanides | 11 | 2 | Pharmaceuticals > Antidiabetics > Biguanides
+  7 | Gastrointestinal | 1 | 1 | Pharmaceuticals > Gastrointestinal
+  8 | Acid reducers | 7 | 2 | Pharmaceuticals > Gastrointestinal > Acid reducers
+  9 | Respiratory and allergy | 1 | 1 | Pharmaceuticals > Respiratory and allergy
+  10 | Antihistamines | 9 | 2 | Pharmaceuticals > Respiratory and allergy > Antihistamines
+
+--- fn_availability_band_demo ---
+purpose: The stored function maps quantity + reorder level to a patient-safe band.
+why: shows the stored FUNCTION on boundary values (0, at reorder level, above it).
+expected: Out, Low, Low, In stock.
+> SELECT fn_availability_band(0, 10) AS q0, fn_availability_band(5, 10) AS q5, fn_availability_band(10, 10) AS q10, fn_availability_band(11, 10) AS q11
+  q0 | q5 | q10 | q11
+  Out | Low | Low | In stock
+
+--- demo_candidates ---
+purpose: Substitution eligibility for 'Paracetamol 500 mg Tablet' (medicine 1) - eligible, ranked, and rejected near-misses.
+expected: eligible = Pyrelief 500 Tablet, Febrix 500 Tablet; rejected = 650 mg, caffeine combo, syrup, ER, look-alike Parasprin, discontinued.
+> CALL sp_equivalent_candidates(1)
+  medicine_id | name | brand | dosage_form | route | release_type | requires_prescription | eligibility_reason | verification_status
+  3 | Febrix 500 Tablet | Nova Pharma | tablet | oral | immediate | 0 | Same active ingredients and strengths, dosage form, route and release type | PENDING_PHARMACIST_VERIFICATION
+  2 | Pyrelief 500 Tablet | Medico Labs | tablet | oral | immediate | 0 | Same active ingredients and strengths, dosage form, route and release type | PENDING_PHARMACIST_VERIFICATION
+> CALL sp_rank_candidates(1, 2)
+  rank_position | medicine_id | name | brand | requires_prescription | availability_here | quantity_here | pharmacies_stocking | total_quantity | open_low_stock_alerts | eligibility_reason | verification_status
+  1 | 2 | Pyrelief 500 Tablet | Medico Labs | 0 | In stock | 80 | 2 | 88 | 2 | Same active ingredients and strengths, dosage form, route and release type | PENDING_PHARMACIST_VERIFICATION
+  2 | 3 | Febrix 500 Tablet | Nova Pharma | 0 | Out | 0 | 0 | 0 | 3 | Same active ingredients and strengths, dosage form, route and release type | PENDING_PHARMACIST_VERIFICATION
+> CALL sp_candidate_rejections(1)
+  medicine_id | name | brand | reject_reason
+  5 | Paracetamol + Caffeine Tablet | Medico Labs | different active-ingredient set
+  7 | Paracetamol 500 mg ER Tablet | Nova Pharma | different release type
+  17 | Paracetamol 500 mg Tablet (Discontinued) | Generic | candidate is inactive or discontinued
+  4 | Paracetamol 650 mg Tablet | Generic | different strength
+  6 | Paracetamol Oral Syrup 250 mg/5 ml | Generic | different strength; different strength basis; different dosage form
+  8 | Parasprin 500 Tablet | Nova Pharma | different active-ingredient set
+
+--- demo_trigger_low_stock ---
+purpose: Trigger demo - dropping stock to the reorder level opens exactly ONE alert; restocking resolves it.
+expected: open alerts 0 -> 1 -> still 1 (no duplicate) -> 0; the scratch row is removed at the end.
+> INSERT INTO medicines (id, name, brand, category_id, dosage_form, strength_basis) VALUES (901, 'Trigger Demo Tablet', 'Demo Labs', 4, 'tablet', 'per tablet') ON
+  OK (1 rows affected)
+> INSERT INTO inventory (pharmacy_id, medicine_id, quantity, reorder_level) VALUES (3, 901, 50, 10) ON DUPLICATE KEY UPDATE quantity = 50, reorder_level = 10
+  OK (1 rows affected)
+> SELECT COUNT(*) AS open_alerts FROM low_stock_alerts WHERE pharmacy_id = 3 AND medicine_id = 901 AND status = 'OPEN'
+  open_alerts
+  0
+> UPDATE inventory SET quantity = 10 WHERE pharmacy_id = 3 AND medicine_id = 901
+  OK (1 rows affected)
+> SELECT COUNT(*) AS open_alerts FROM low_stock_alerts WHERE pharmacy_id = 3 AND medicine_id = 901 AND status = 'OPEN'
+  open_alerts
+  1
+> UPDATE inventory SET quantity = 4 WHERE pharmacy_id = 3 AND medicine_id = 901
+  OK (1 rows affected)
+> SELECT COUNT(*) AS open_alerts FROM low_stock_alerts WHERE pharmacy_id = 3 AND medicine_id = 901 AND status = 'OPEN'
+  open_alerts
+  1
+> UPDATE inventory SET quantity = 40 WHERE pharmacy_id = 3 AND medicine_id = 901
+  OK (1 rows affected)
+> SELECT COUNT(*) AS open_alerts, (SELECT COUNT(*) FROM low_stock_alerts WHERE pharmacy_id = 3 AND medicine_id = 901 AND status = 'RESOLVED') AS resolved_alerts F
+  open_alerts | resolved_alerts
+  0 | 1
+> DELETE FROM low_stock_alerts WHERE medicine_id = 901
+  OK (1 rows affected)
+> DELETE FROM inventory WHERE medicine_id = 901
+  OK (1 rows affected)
+> DELETE FROM medicines WHERE id = 901
+  OK (1 rows affected)
+
+--- demo_sale_transaction ---
+purpose: sp_complete_order on seed order 3 (APPROVED, 2 x Pyrelief at City Care) needs the pharmacist context of City Care;

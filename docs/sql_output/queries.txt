@@ -1,0 +1,90 @@
+== queries.sql ==
+
+--- q_join_availability ---
+purpose: Paracetamol-containing medicines with their ingredient, strength and stock at every pharmacy.
+why: JOIN across 5 tables (inventory x pharmacies x medicines x medicine_ingredients x active_ingredients) including the M:N junction.
+expected: one row per (pharmacy, paracetamol medicine) with the availability band, e.g. 'Pyrelief 500 Tablet' at 'Green Cross Pharmacy' = 80 / In stock.
+> SELECT p.name AS pharmacy, m.name AS medicine, ai.name AS ingredient, mi.strength_mg, i.quantity, fn_availability_band(i.quantity, i.reorder_level) AS availabil
+  pharmacy | medicine | ingredient | strength_mg | quantity | availability
+  City Care Pharmacy | Febrix 500 Tablet | Paracetamol | 500.000 | 0 | Out
+  City Care Pharmacy | Paracetamol + Caffeine Tablet | Paracetamol | 500.000 | 40 | In stock
+  City Care Pharmacy | Paracetamol 500 mg ER Tablet | Paracetamol | 500.000 | 0 | Out
+  City Care Pharmacy | Paracetamol 500 mg Tablet | Paracetamol | 500.000 | 120 | In stock
+  City Care Pharmacy | Paracetamol 650 mg Tablet | Paracetamol | 650.000 | 50 | In stock
+  City Care Pharmacy | Paracetamol Oral Syrup 250 mg/5 ml | Paracetamol | 250.000 | 25 | In stock
+  City Care Pharmacy | Pyrelief 500 Tablet | Paracetamol | 500.000 | 8 | Low
+  Green Cross Pharmacy | Febrix 500 Tablet | Paracetamol | 500.000 | 0 | Out
+  Green Cross Pharmacy | Paracetamol 500 mg ER Tablet | Paracetamol | 500.000 | 12 | In stock
+  Green Cross Pharmacy | Paracetamol 500 mg Tablet | Paracetamol | 500.000 | 0 | Out
+  Green Cross Pharmacy | Paracetamol 650 mg Tablet | Paracetamol | 650.000 | 20 | In stock
+  Green Cross Pharmacy | Pyrelief 500 Tablet | Paracetamol | 500.000 | 80 | In stock
+  Lakeside Pharmacy | Febrix 500 Tablet | Paracetamol | 500.000 | 0 | Out
+  Lakeside Pharmacy | Paracetamol + Caffeine Tablet | Paracetamol | 500.000 | 22 | In stock
+  Lakeside Pharmacy | Paracetamol 500 mg Tablet | Paracetamol | 500.000 | 15 | Low
+  Lakeside Pharmacy | Pyrelief 500 Tablet | Paracetamol | 500.000 | 0 | Out
+
+--- q_nested_no_stock ---
+purpose: Active medicines that no pharmacy currently has in stock (shortage candidates).
+why: NESTED subquery - the inner SELECT runs once, independently of the outer query (NOT IN).
+expected: 'Febrix 500 Tablet' and 'Metformin 500 mg Tablet (Brand B)'.
+> SELECT m.id, m.name, m.brand FROM medicines m WHERE m.is_active = 1 AND m.id NOT IN (SELECT medicine_id FROM inventory WHERE quantity > 0) ORDER BY m.name
+  id | name | brand
+  3 | Febrix 500 Tablet | Nova Pharma
+  16 | Metformin 500 mg Tablet (Brand B) | Nova Pharma
+
+--- q_correlated_below_own_avg ---
+purpose: For each pharmacy, the medicines whose quantity is below THAT pharmacy's own average quantity.
+why: CORRELATED subquery - the inner query references the outer row (i.pharmacy_id) and is re-evaluated per row.
+expected: rows per pharmacy, each quantity lower than the pharmacy's average (e.g. City Care average is about 43).
+> SELECT p.name AS pharmacy, m.name AS medicine, i.quantity FROM inventory i JOIN pharmacies p ON p.id = i.pharmacy_id JOIN medicines m ON m.id = i.medicine_id WH
+  pharmacy | medicine | quantity
+  City Care Pharmacy | Febrix 500 Tablet | 0
+  City Care Pharmacy | Paracetamol 500 mg ER Tablet | 0
+  City Care Pharmacy | Amoxyl 500 Capsule | 0
+  City Care Pharmacy | Pyrelief 500 Tablet | 8
+  City Care Pharmacy | Ibufen 400 Tablet | 15
+  City Care Pharmacy | Paracetamol Oral Syrup 250 mg/5 ml | 25
+  City Care Pharmacy | Metformin 500 mg Tablet | 30
+  City Care Pharmacy | Paracetamol + Caffeine Tablet | 40
+  Green Cross Pharmacy | Paracetamol 500 mg Tablet | 0
+  Green Cross Pharmacy | Febrix 500 Tablet | 0
+  Green Cross Pharmacy | Ibuprofen 400 mg Tablet | 0
+  Green Cross Pharmacy | Omeprazole 20 mg Capsule | 0
+  Green Cross Pharmacy | Amoxicillin 500 mg Capsule | 5
+  Green Cross Pharmacy | Paracetamol 500 mg ER Tablet | 12
+  Green Cross Pharmacy | Paracetamol 650 mg Tablet | 20
+  Green Cross Pharmacy | Cetirizine 10 mg Tablet | 25
+  Lakeside Pharmacy | Pyrelief 500 Tablet | 0
+  Lakeside Pharmacy | Febrix 500 Tablet | 0
+  Lakeside Pharmacy | Ibufen 400 Tablet | 0
+  Lakeside Pharmacy | Amoxicillin 500 mg Capsule | 0
+  Lakeside Pharmacy | Cetirizine 10 mg Tablet | 0
+
+--- q_recursive_category_descendants ---
+purpose: Every descendant of the 'Analgesics' category with its depth and full path.
+why: RECURSIVE CTE - the anchor member selects the root, the recursive member joins children until none are left.
+expected: Antipyretic analgesics (depth 1) and NSAIDs (depth 1) under Analgesics.
+> WITH RECURSIVE descendants AS ( SELECT id, name, parent_id, 0 AS depth, CAST(name AS CHAR(500)) AS path FROM medicine_categories WHERE name = 'Analgesics' UNION
+  id | name | depth | path
+  2 | Analgesics | 0 | Analgesics
+  3 | Antipyretic analgesics | 1 | Analgesics > Antipyretic analgesics
+  4 | NSAIDs | 1 | Analgesics > NSAIDs
+
+--- q_group_having_low_items ---
+purpose: Pharmacies with at least 3 medicines at or below their reorder level.
+why: aggregation with GROUP BY ... HAVING (the filter is on the aggregate, which WHERE cannot do).
+expected: Lakeside (6), City Care (5), Green Cross (5).
+> SELECT p.name AS pharmacy, COUNT(*) AS low_or_out_items, SUM(i.quantity) AS units_on_hand FROM inventory i JOIN pharmacies p ON p.id = i.pharmacy_id WHERE i.qua
+  pharmacy | low_or_out_items | units_on_hand
+  Lakeside Pharmacy | 6 | 15
+  City Care Pharmacy | 5 | 23
+  Green Cross Pharmacy | 5 | 5
+
+--- q_open_shortages_with_stock ---
+purpose: Medicines with an OPEN shortage entry and how many units remain across all pharmacies.
+why: LEFT JOIN + aggregate so medicines with no inventory rows still appear (with 0).
+expected: Febrix 500 Tablet (0 units) and Amoxyl 500 Capsule (30 units).
+> SELECT m.name AS medicine, s.severity, s.reported_at, COALESCE(SUM(i.quantity), 0) AS units_all_pharmacies FROM shortage_entries s JOIN medicines m ON m.id = s.
+  medicine | severity | reported_at | units_all_pharmacies
+  Febrix 500 Tablet | HIGH | 2026-09-20 09:00:00 | 0
+  Amoxyl 500 Capsule | MEDIUM | 2026-10-01 10:30:00 | 30

@@ -1,0 +1,11 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+mysql-connector-python>=8.4
+pymongo>=4.6
+argon2-cffi>=23.1
+PyJWT>=2.8
+python-dotenv>=1.0
+pydantic>=2.6
+pytest>=8.0
+httpx>=0.27
+mongomock>=4.1

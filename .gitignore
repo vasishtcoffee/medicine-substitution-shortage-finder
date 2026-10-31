@@ -1,0 +1,13 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+.next/
+*.log
+.idea/
+.vscode/
+.tools/
+.env.local

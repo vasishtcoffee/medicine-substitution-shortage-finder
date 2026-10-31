@@ -1,0 +1,38 @@
+== dml_demo.sql ==
+
+--- step0_cleanup ---
+> DELETE FROM medicines WHERE id = 900
+  OK (0 rows affected)
+
+--- step1_insert ---
+> INSERT INTO medicines (id, name, brand, category_id, dosage_form, route, release_type, strength_basis) VALUES (900, 'DML Demo Tablet 100 mg', 'Demo Labs', 4, 't
+  OK (1 rows affected)
+> INSERT INTO medicine_ingredients (medicine_id, ingredient_id, strength_mg) VALUES (900, 3, 100)
+  OK (1 rows affected)
+
+--- step2_select ---
+> SELECT m.id, m.name, ai.name AS ingredient, mi.strength_mg FROM medicines m JOIN medicine_ingredients mi ON mi.medicine_id = m.id JOIN active_ingredients ai ON 
+  id | name | ingredient | strength_mg
+  900 | DML Demo Tablet 100 mg | Ibuprofen | 100.000
+
+--- step3_update ---
+> UPDATE medicines SET brand = 'Demo Labs Ltd', substitution_allowed = 0 WHERE id = 900
+  OK (1 rows affected)
+> SELECT id, brand, substitution_allowed FROM medicines WHERE id = 900
+  id | brand | substitution_allowed
+  900 | Demo Labs Ltd | 0
+
+--- step4_update_blocked_by_check ---
+> -- EXPECT ERROR 3819 UPDATE medicine_ingredients SET strength_mg = -5 WHERE medicine_id = 900
+  EXPECTED ERROR 3819: Check constraint 'chk_mi_strength' is violated.
+
+--- step5_blocked_delete ---
+> -- Medicine 1 is referenced by inventory and orders, so the foreign keys refuse the delete (soft delete is_active=0 is the app's way). -- EXPECT ERROR 1451 DELE
+  EXPECTED ERROR 1451: Cannot delete or update a parent row: a foreign key constraint fails (`medsub`.`inventory`, CONSTRAINT `fk_inv_medicine` FOREIGN KEY (`medicine_id`) REFERENCES `medicines` (`id`))
+
+--- step6_safe_delete ---
+> -- Nothing else references medicine 900; its medicine_ingredients rows go with it (ON DELETE CASCADE). DELETE FROM medicines WHERE id = 900
+  OK (1 rows affected)
+> SELECT (SELECT COUNT(*) FROM medicines WHERE id = 900) AS medicine_rows_left, (SELECT COUNT(*) FROM medicine_ingredients WHERE medicine_id = 900) AS ingredient_
+  medicine_rows_left | ingredient_rows_left
+  0 | 0

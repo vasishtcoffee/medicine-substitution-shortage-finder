@@ -1,0 +1,318 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ER diagram and relational schema</title>
+<style>
+ body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111} h1{font-size:20px} h2{font-size:16px;margin-top:26px;border-bottom:2px solid #333}
+ table{border-collapse:collapse;width:100%;font-size:12px;margin:8px 0} th,td{border:1px solid #888;padding:4px 6px;text-align:left;vertical-align:top} th{background:#eee}
+ small{color:#555} .pb{page-break-before:always}
+ @media print{@page{size:A4 landscape;margin:10mm} body{margin:0} h2{break-after:avoid} tr{break-inside:avoid}}
+</style></head><body>
+<h1>Medicine Substitution &amp; Shortage Finder: ER diagram and relational schema</h1>
+<p>Educational demonstration, synthetic data. Generated from the live MySQL schema (<code>scripts/build_er_print.py</code>). Print: Ctrl+P, landscape.</p>
+<h2>1. ER diagram</h2>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1360 1335" width="100%" font-family="Arial, Helvetica, sans-serif">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="24" font-size="16" font-weight="bold">ER diagram: Medicine Substitution &amp; Shortage Finder (generated from the live MySQL schema)</text>
+<line x1="255" y1="146" x2="375" y2="146" stroke="#333" stroke-width="1.4"/>
+<rect x="287" y="128" width="56" height="14" fill="white"/>
+<text x="315" y="140" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">places</text>
+<text x="269" y="140" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="361" y="140" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="148" y1="216" x2="148" y2="375" stroke="#333" stroke-width="1.4"/>
+<rect x="100" y="278" width="96" height="14" fill="white"/>
+<text x="148" y="290" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">is assigned</text>
+<text x="158" y="230" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="158" y="361" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<line x1="375" y1="423" x2="255" y2="416" stroke="#333" stroke-width="1.4"/>
+<rect x="283" y="402" width="64" height="14" fill="white"/>
+<text x="315" y="413" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">employs</text>
+<text x="361" y="417" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="269" y="410" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="482" y1="375" x2="482" y2="216" stroke="#333" stroke-width="1.4"/>
+<rect x="450" y="278" width="64" height="14" fill="white"/>
+<text x="482" y="290" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">fulfils</text>
+<text x="492" y="361" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="492" y="230" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="590" y1="146" x2="710" y2="130" stroke="#333" stroke-width="1.4"/>
+<rect x="614" y="121" width="72" height="14" fill="white"/>
+<text x="650" y="132" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">contains</text>
+<text x="604" y="140" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="696" y="124" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="818" y1="375" x2="818" y2="186" stroke="#333" stroke-width="1.4"/>
+<rect x="718" y="264" width="200" height="14" fill="white"/>
+<text x="818" y="274" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">requested / dispensed as</text>
+<text x="828" y="361" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="828" y="200" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="925" y1="130" x2="1045" y2="160" stroke="#333" stroke-width="1.4"/>
+<rect x="937" y="128" width="96" height="14" fill="white"/>
+<text x="985" y="140" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">reviewed in</text>
+<text x="939" y="124" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="1031" y="154" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="482" y1="471" x2="482" y2="675" stroke="#333" stroke-width="1.4"/>
+<rect x="454" y="556" width="56" height="14" fill="white"/>
+<text x="482" y="567" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">stocks</text>
+<text x="492" y="485" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="492" y="661" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="710" y1="490" x2="590" y2="730" stroke="#333" stroke-width="1.4"/>
+<rect x="606" y="594" width="88" height="14" fill="white"/>
+<text x="650" y="604" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">stocked as</text>
+<text x="720" y="504" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="600" y="716" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="375" y1="730" x2="255" y2="776" stroke="#333" stroke-width="1.4"/>
+<rect x="287" y="736" width="56" height="14" fill="white"/>
+<text x="315" y="747" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">ledger</text>
+<text x="361" y="724" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="269" y="770" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="482" y1="786" x2="482" y2="975" stroke="#333" stroke-width="1.4"/>
+<rect x="454" y="864" width="56" height="14" fill="white"/>
+<text x="482" y="874" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">raises</text>
+<text x="492" y="800" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="492" y="961" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="1045" y1="416" x2="925" y2="490" stroke="#333" stroke-width="1.4"/>
+<rect x="941" y="436" width="88" height="14" fill="white"/>
+<text x="985" y="447" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">classifies</text>
+<text x="1031" y="410" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="939" y="484" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="818" y1="606" x2="818" y2="675" stroke="#333" stroke-width="1.4"/>
+<rect x="766" y="624" width="104" height="14" fill="white"/>
+<text x="818" y="634" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">reported for</text>
+<text x="828" y="620" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="828" y="661" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="925" y1="490" x2="1045" y2="716" stroke="#333" stroke-width="1.4"/>
+<rect x="937" y="586" width="96" height="14" fill="white"/>
+<text x="985" y="597" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">composed of</text>
+<text x="935" y="504" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="1055" y="702" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<line x1="1152" y1="975" x2="1152" y2="756" stroke="#333" stroke-width="1.4"/>
+<rect x="1120" y="848" width="64" height="14" fill="white"/>
+<text x="1152" y="860" font-size="11" text-anchor="middle" fill="#00507a" font-style="italic">used in</text>
+<text x="1162" y="961" font-size="13" font-weight="bold" text-anchor="middle">1</text>
+<text x="1162" y="770" font-size="13" font-weight="bold" text-anchor="middle">N</text>
+<polyline points="40,115 14,115 14,715 40,715" fill="none" stroke="#333" stroke-dasharray="5,3"/>
+<text x="18" y="375" font-size="11" fill="#00507a" font-style="italic" transform="rotate(-90 18 375)">actor (users 1 : N inventory_movements)</text>
+<polyline points="148,75 148,52 1152,52 1152,75" fill="none" stroke="#333" stroke-dasharray="5,3"/>
+<text x="650" y="48" font-size="11" fill="#00507a" font-style="italic" text-anchor="middle">reviewer (users 1 : N substitution_reviews)</text>
+<path d="M 1260 425 h 22 v 40 h -22" fill="none" stroke="#333" stroke-width="1.4"/>
+<text x="1286" y="449" font-size="11" fill="#00507a" font-style="italic">parent</text>
+
+<rect x="1045" y="975" width="215" height="66" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="1152.5" y="993" font-size="13" font-weight="bold" text-anchor="middle">active_ingredients</text>
+<line x1="1045" y1="999" x2="1260" y2="999" stroke="#000"/>
+<text x="1053" y="1015" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="1053" y="1030" font-size="11" style="">name</text>
+
+<rect x="375" y="675" width="215" height="111" fill="#eefbea" stroke="#000" stroke-width="1.6" stroke-dasharray="6,3"/>
+<text x="482.5" y="693" font-size="13" font-weight="bold" text-anchor="middle">inventory</text>
+<line x1="375" y1="699" x2="590" y2="699" stroke="#000"/>
+<text x="383" y="715" font-size="11" style="text-decoration:underline;font-weight:bold;font-style:italic;">pharmacy_id (FK)</text>
+<text x="383" y="730" font-size="11" style="text-decoration:underline;font-weight:bold;font-style:italic;">medicine_id (FK)</text>
+<text x="383" y="745" font-size="11" style="">quantity</text>
+<text x="383" y="760" font-size="11" style="">reorder_level</text>
+<text x="383" y="775" font-size="11" style="">updated_at</text>
+<rect x="36" y="671" width="223" height="209" fill="none" stroke="#000" stroke-width="1.4"/>
+<rect x="40" y="675" width="215" height="201" fill="#fff4e0" stroke="#000" stroke-width="1.6"/>
+<text x="147.5" y="693" font-size="13" font-weight="bold" text-anchor="middle">inventory_movements</text>
+<line x1="40" y1="699" x2="255" y2="699" stroke="#000"/>
+<text x="48" y="715" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="48" y="730" font-size="11" style="font-style:italic;">pharmacy_id (FK)</text>
+<text x="48" y="745" font-size="11" style="font-style:italic;">medicine_id (FK)</text>
+<text x="48" y="760" font-size="11" style="">movement_type</text>
+<text x="48" y="775" font-size="11" style="">delta</text>
+<text x="48" y="790" font-size="11" style="">batch_no ?</text>
+<text x="48" y="805" font-size="11" style="">expiry_date ?</text>
+<text x="48" y="820" font-size="11" style="font-style:italic;">order_id (FK) ?</text>
+<text x="48" y="835" font-size="11" style="font-style:italic;">actor_user_id (FK)</text>
+<text x="48" y="850" font-size="11" style="">note ?</text>
+<text x="48" y="865" font-size="11" style="">created_at</text>
+<rect x="371" y="971" width="223" height="164" fill="none" stroke="#000" stroke-width="1.4"/>
+<rect x="375" y="975" width="215" height="156" fill="#fff4e0" stroke="#000" stroke-width="1.6"/>
+<text x="482.5" y="993" font-size="13" font-weight="bold" text-anchor="middle">low_stock_alerts</text>
+<line x1="375" y1="999" x2="590" y2="999" stroke="#000"/>
+<text x="383" y="1015" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="383" y="1030" font-size="11" style="font-style:italic;">pharmacy_id (FK)</text>
+<text x="383" y="1045" font-size="11" style="font-style:italic;">medicine_id (FK)</text>
+<text x="383" y="1060" font-size="11" style="">status</text>
+<text x="383" y="1075" font-size="11" style="">quantity_at_open</text>
+<text x="383" y="1090" font-size="11" style="">opened_at</text>
+<text x="383" y="1105" font-size="11" style="">resolved_at ?</text>
+<text x="383" y="1120" font-size="11" style="">/open_alert_key ?</text>
+
+<rect x="1045" y="375" width="215" height="81" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="1152.5" y="393" font-size="13" font-weight="bold" text-anchor="middle">medicine_categories</text>
+<line x1="1045" y1="399" x2="1260" y2="399" stroke="#000"/>
+<text x="1053" y="415" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="1053" y="430" font-size="11" style="">name</text>
+<text x="1053" y="445" font-size="11" style="font-style:italic;">parent_id (FK) ?</text>
+
+<rect x="1045" y="675" width="215" height="81" fill="#eefbea" stroke="#000" stroke-width="1.6" stroke-dasharray="6,3"/>
+<text x="1152.5" y="693" font-size="13" font-weight="bold" text-anchor="middle">medicine_ingredients</text>
+<line x1="1045" y1="699" x2="1260" y2="699" stroke="#000"/>
+<text x="1053" y="715" font-size="11" style="text-decoration:underline;font-weight:bold;font-style:italic;">medicine_id (FK)</text>
+<text x="1053" y="730" font-size="11" style="text-decoration:underline;font-weight:bold;font-style:italic;">ingredient_id (FK)</text>
+<text x="1053" y="745" font-size="11" style="">strength_mg</text>
+
+<rect x="710" y="375" width="215" height="231" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="817.5" y="393" font-size="13" font-weight="bold" text-anchor="middle">medicines</text>
+<line x1="710" y1="399" x2="925" y2="399" stroke="#000"/>
+<text x="718" y="415" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="718" y="430" font-size="11" style="">name</text>
+<text x="718" y="445" font-size="11" style="">brand</text>
+<text x="718" y="460" font-size="11" style="font-style:italic;">category_id (FK)</text>
+<text x="718" y="475" font-size="11" style="">dosage_form</text>
+<text x="718" y="490" font-size="11" style="">route</text>
+<text x="718" y="505" font-size="11" style="">release_type</text>
+<text x="718" y="520" font-size="11" style="">strength_basis</text>
+<text x="718" y="535" font-size="11" style="">requires_prescription</text>
+<text x="718" y="550" font-size="11" style="">substitution_allowed</text>
+<text x="718" y="565" font-size="11" style="">is_active</text>
+<text x="718" y="580" font-size="11" style="">created_at</text>
+<text x="718" y="595" font-size="11" style="">updated_at</text>
+<rect x="706" y="71" width="223" height="119" fill="none" stroke="#000" stroke-width="1.4"/>
+<rect x="710" y="75" width="215" height="111" fill="#fff4e0" stroke="#000" stroke-width="1.6"/>
+<text x="817.5" y="93" font-size="13" font-weight="bold" text-anchor="middle">order_items</text>
+<line x1="710" y1="99" x2="925" y2="99" stroke="#000"/>
+<text x="718" y="115" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="718" y="130" font-size="11" style="font-style:italic;">order_id (FK)</text>
+<text x="718" y="145" font-size="11" style="font-style:italic;">requested_medicine_id (FK)</text>
+<text x="718" y="160" font-size="11" style="font-style:italic;">dispensed_medicine_id (FK) ?</text>
+<text x="718" y="175" font-size="11" style="">quantity</text>
+
+<rect x="375" y="75" width="215" height="141" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="482.5" y="93" font-size="13" font-weight="bold" text-anchor="middle">orders</text>
+<line x1="375" y1="99" x2="590" y2="99" stroke="#000"/>
+<text x="383" y="115" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="383" y="130" font-size="11" style="font-style:italic;">patient_id (FK)</text>
+<text x="383" y="145" font-size="11" style="font-style:italic;">pharmacy_id (FK)</text>
+<text x="383" y="160" font-size="11" style="">status</text>
+<text x="383" y="175" font-size="11" style="">prescription_note ?</text>
+<text x="383" y="190" font-size="11" style="">created_at</text>
+<text x="383" y="205" font-size="11" style="">updated_at</text>
+
+<rect x="375" y="375" width="215" height="96" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="482.5" y="393" font-size="13" font-weight="bold" text-anchor="middle">pharmacies</text>
+<line x1="375" y1="399" x2="590" y2="399" stroke="#000"/>
+<text x="383" y="415" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="383" y="430" font-size="11" style="">name</text>
+<text x="383" y="445" font-size="11" style="">city</text>
+<text x="383" y="460" font-size="11" style="">address ?</text>
+
+<rect x="40" y="375" width="215" height="81" fill="#eefbea" stroke="#000" stroke-width="1.6" stroke-dasharray="6,3"/>
+<text x="147.5" y="393" font-size="13" font-weight="bold" text-anchor="middle">pharmacist_assignments</text>
+<line x1="40" y1="399" x2="255" y2="399" stroke="#000"/>
+<text x="48" y="415" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="48" y="430" font-size="11" style="font-style:italic;">user_id (FK)</text>
+<text x="48" y="445" font-size="11" style="font-style:italic;">pharmacy_id (FK)</text>
+
+<rect x="710" y="675" width="215" height="156" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="817.5" y="693" font-size="13" font-weight="bold" text-anchor="middle">shortage_entries</text>
+<line x1="710" y1="699" x2="925" y2="699" stroke="#000"/>
+<text x="718" y="715" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="718" y="730" font-size="11" style="font-style:italic;">medicine_id (FK)</text>
+<text x="718" y="745" font-size="11" style="">status</text>
+<text x="718" y="760" font-size="11" style="">severity</text>
+<text x="718" y="775" font-size="11" style="">reported_at</text>
+<text x="718" y="790" font-size="11" style="">resolved_at ?</text>
+<text x="718" y="805" font-size="11" style="">source</text>
+<text x="718" y="820" font-size="11" style="">note ?</text>
+<rect x="1041" y="71" width="223" height="179" fill="none" stroke="#000" stroke-width="1.4"/>
+<rect x="1045" y="75" width="215" height="171" fill="#fff4e0" stroke="#000" stroke-width="1.6"/>
+<text x="1152.5" y="93" font-size="13" font-weight="bold" text-anchor="middle">substitution_reviews</text>
+<line x1="1045" y1="99" x2="1260" y2="99" stroke="#000"/>
+<text x="1053" y="115" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="1053" y="130" font-size="11" style="font-style:italic;">order_item_id (FK)</text>
+<text x="1053" y="145" font-size="11" style="font-style:italic;">proposed_medicine_id (FK)</text>
+<text x="1053" y="160" font-size="11" style="font-style:italic;">reviewer_id (FK)</text>
+<text x="1053" y="175" font-size="11" style="">decision</text>
+<text x="1053" y="190" font-size="11" style="">decided_at</text>
+<text x="1053" y="205" font-size="11" style="">note ?</text>
+<text x="1053" y="220" font-size="11" style="">eligibility_reason</text>
+<text x="1053" y="235" font-size="11" style="">ranking_snapshot ?</text>
+
+<rect x="710" y="975" width="215" height="171" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="817.5" y="993" font-size="13" font-weight="bold" text-anchor="middle">sync_outbox</text>
+<line x1="710" y1="999" x2="925" y2="999" stroke="#000"/>
+<text x="718" y="1015" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="718" y="1030" font-size="11" style="">operation</text>
+<text x="718" y="1045" font-size="11" style="">entity_id</text>
+<text x="718" y="1060" font-size="11" style="">payload</text>
+<text x="718" y="1075" font-size="11" style="">status</text>
+<text x="718" y="1090" font-size="11" style="">attempts</text>
+<text x="718" y="1105" font-size="11" style="">last_error ?</text>
+<text x="718" y="1120" font-size="11" style="">created_at</text>
+<text x="718" y="1135" font-size="11" style="">processed_at ?</text>
+
+<rect x="40" y="75" width="215" height="141" fill="#eef6ff" stroke="#000" stroke-width="1.6"/>
+<text x="147.5" y="93" font-size="13" font-weight="bold" text-anchor="middle">users</text>
+<line x1="40" y1="99" x2="255" y2="99" stroke="#000"/>
+<text x="48" y="115" font-size="11" style="text-decoration:underline;font-weight:bold;">id</text>
+<text x="48" y="130" font-size="11" style="">email</text>
+<text x="48" y="145" font-size="11" style="">full_name</text>
+<text x="48" y="160" font-size="11" style="">role</text>
+<text x="48" y="175" font-size="11" style="">password_hash</text>
+<text x="48" y="190" font-size="11" style="">is_active</text>
+<text x="48" y="205" font-size="11" style="">created_at</text>
+<text x="20" y="1297" font-size="11"><tspan font-weight="bold" text-decoration="underline">Underlined bold</tspan> = primary key · <tspan font-style="italic">italic (FK)</tspan> = foreign key · ? = optional (NULL allowed) · /name = derived (generated column) · dashed line between boxes = relationship through a margin route</text>
+<text x="20" y="1313" font-size="11">Single border = strong entity · double border = weak entity (existence-dependent) · dashed border = associative entity (resolves an M:N or 1:1 relationship) · labels: 1 = one, N = many</text>
+</svg>
+<h2 class="pb">2. Entity classification (15 tables)</h2>
+<table><tr><th>Kind</th><th>Count</th><th>Tables</th><th>Why</th></tr>
+<tr><td>Strong entities</td><td>8</td><td>users, pharmacies, medicine_categories, active_ingredients, medicines, orders, shortage_entries, sync_outbox</td><td>Have their own primary key and exist independently of any other row.</td></tr>
+<tr><td>Weak (existence-dependent) entities</td><td>4</td><td>order_items, substitution_reviews, inventory_movements, low_stock_alerts</td><td>Cannot exist without their owner; each is identified through a foreign key to it (identifying relationship): order_items &rarr; orders; substitution_reviews &rarr; order_items; inventory_movements &rarr; inventory; low_stock_alerts &rarr; inventory. Implemented with a surrogate id, but the FK is NOT NULL and deleting the owner cascades or is blocked.</td></tr>
+<tr><td>Associative entities (relationship tables)</td><td>3</td><td>inventory, medicine_ingredients, pharmacist_assignments</td><td>Resolve an M:N (or 1:1) relationship and carry its own attributes (e.g. <code>inventory.quantity</code>, <code>medicine_ingredients.strength_mg</code>): inventory = pharmacies M:N medicines; medicine_ingredients = medicines M:N active_ingredients; pharmacist_assignments = users 1:1 pharmacies (pharmacist works at one pharmacy).</td></tr></table>
+<p><small><code>sync_outbox</code> is an infrastructure table (transactional outbox for MongoDB) and is classed as strong because it stands alone. <code>schema_migrations</code> (migration bookkeeping) is not part of the model.</small></p>
+
+<h2>3. Relationships (every foreign key)</h2>
+<table><tr><th>Parent (1)</th><th>Child (N)</th><th>FK column(s)</th><th>Cardinality</th><th>Participation of child</th><th>Delete rule</th></tr><tr><td>inventory</td><td>low_stock_alerts</td><td>pharmacy_id, medicine_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>pharmacies</td><td>pharmacist_assignments</td><td>pharmacy_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>users</td><td>pharmacist_assignments</td><td>user_id</td><td>1 : 1</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>medicine_categories</td><td>medicine_categories</td><td>parent_id</td><td>1 : N</td><td>partial (FK may be NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>medicines</td><td>inventory</td><td>medicine_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>pharmacies</td><td>inventory</td><td>pharmacy_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>medicine_categories</td><td>medicines</td><td>category_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>active_ingredients</td><td>medicine_ingredients</td><td>ingredient_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>medicines</td><td>medicine_ingredients</td><td>medicine_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE CASCADE</td></tr>
+<tr><td>users</td><td>inventory_movements</td><td>actor_user_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>inventory</td><td>inventory_movements</td><td>pharmacy_id, medicine_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>orders</td><td>inventory_movements</td><td>order_id</td><td>1 : N</td><td>partial (FK may be NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>medicines</td><td>order_items</td><td>dispensed_medicine_id</td><td>1 : N</td><td>partial (FK may be NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>orders</td><td>order_items</td><td>order_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE CASCADE</td></tr>
+<tr><td>medicines</td><td>order_items</td><td>requested_medicine_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>users</td><td>orders</td><td>patient_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>pharmacies</td><td>orders</td><td>pharmacy_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>medicines</td><td>shortage_entries</td><td>medicine_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>order_items</td><td>substitution_reviews</td><td>order_item_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE CASCADE</td></tr>
+<tr><td>medicines</td><td>substitution_reviews</td><td>proposed_medicine_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr>
+<tr><td>users</td><td>substitution_reviews</td><td>reviewer_id</td><td>1 : N</td><td>total (FK NOT NULL)</td><td>ON DELETE NO ACTION</td></tr></table>
+<p><small>M:N relationships: pharmacies &harr; medicines (through <code>inventory</code>), medicines &harr; active_ingredients (through <code>medicine_ingredients</code>). Recursive 1:N: <code>medicine_categories.parent_id</code> &rarr; <code>medicine_categories.id</code>.</small></p>
+
+<h2 class="pb">4. Relational schema</h2>
+<p><u><b>Underlined bold</b></u> = primary key · <i>italic</i> = foreign key · /name = derived (stored generated) column.</p>
+<table><tr><th style="width:170px">Relation</th><th>Attributes</th></tr><tr><td><b>active_ingredients</b><br><small>strong</small></td><td>( <u><b>id</b></u>, name )</td></tr>
+<tr><td><b>inventory</b><br><small>associative</small></td><td>( <i><u><b>pharmacy_id</b></u></i>, <i><u><b>medicine_id</b></u></i>, quantity, reorder_level, updated_at )</td></tr>
+<tr><td><b>inventory_movements</b><br><small>weak</small></td><td>( <u><b>id</b></u>, <i>pharmacy_id</i>, <i>medicine_id</i>, movement_type, delta, batch_no, expiry_date, <i>order_id</i>, <i>actor_user_id</i>, note, created_at )</td></tr>
+<tr><td><b>low_stock_alerts</b><br><small>weak</small></td><td>( <u><b>id</b></u>, <i>pharmacy_id</i>, <i>medicine_id</i>, status, quantity_at_open, opened_at, resolved_at, /open_alert_key )</td></tr>
+<tr><td><b>medicine_categories</b><br><small>strong</small></td><td>( <u><b>id</b></u>, name, <i>parent_id</i> )</td></tr>
+<tr><td><b>medicine_ingredients</b><br><small>associative</small></td><td>( <i><u><b>medicine_id</b></u></i>, <i><u><b>ingredient_id</b></u></i>, strength_mg )</td></tr>
+<tr><td><b>medicines</b><br><small>strong</small></td><td>( <u><b>id</b></u>, name, brand, <i>category_id</i>, dosage_form, route, release_type, strength_basis, requires_prescription, substitution_allowed, is_active, created_at, updated_at )</td></tr>
+<tr><td><b>order_items</b><br><small>weak</small></td><td>( <u><b>id</b></u>, <i>order_id</i>, <i>requested_medicine_id</i>, <i>dispensed_medicine_id</i>, quantity )</td></tr>
+<tr><td><b>orders</b><br><small>strong</small></td><td>( <u><b>id</b></u>, <i>patient_id</i>, <i>pharmacy_id</i>, status, prescription_note, created_at, updated_at )</td></tr>
+<tr><td><b>pharmacies</b><br><small>strong</small></td><td>( <u><b>id</b></u>, name, city, address )</td></tr>
+<tr><td><b>pharmacist_assignments</b><br><small>associative</small></td><td>( <u><b>id</b></u>, <i>user_id</i>, <i>pharmacy_id</i> )</td></tr>
+<tr><td><b>shortage_entries</b><br><small>strong</small></td><td>( <u><b>id</b></u>, <i>medicine_id</i>, status, severity, reported_at, resolved_at, source, note )</td></tr>
+<tr><td><b>substitution_reviews</b><br><small>weak</small></td><td>( <u><b>id</b></u>, <i>order_item_id</i>, <i>proposed_medicine_id</i>, <i>reviewer_id</i>, decision, decided_at, note, eligibility_reason, ranking_snapshot )</td></tr>
+<tr><td><b>sync_outbox</b><br><small>strong</small></td><td>( <u><b>id</b></u>, operation, entity_id, payload, status, attempts, last_error, created_at, processed_at )</td></tr>
+<tr><td><b>users</b><br><small>strong</small></td><td>( <u><b>id</b></u>, email, full_name, role, password_hash, is_active, created_at )</td></tr></table>
+
+<h2>5. Types of attributes in this schema (97 columns in 15 tables)</h2>
+<table><tr><th>Attribute type</th><th>Count / where</th><th>Examples</th></tr>
+<tr><td>Simple (atomic)</td><td>almost all columns</td><td><code>users.email</code>, <code>medicines.name</code>, <code>orders.created_at</code></td></tr>
+<tr><td>Key (primary key)</td><td>17 columns; <b>composite keys</b> in <code>inventory(pharmacy_id, medicine_id)</code> and <code>medicine_ingredients(medicine_id, ingredient_id)</code></td><td><code>users.id</code>, <code>orders.id</code></td></tr>
+<tr><td>Foreign key</td><td>23 columns</td><td><code>orders.patient_id</code>, <code>inventory.medicine_id</code></td></tr>
+<tr><td>Unique (candidate key)</td><td>alternate keys</td><td><code>users.email</code>, <code>medicines.name</code>, <code>pharmacist_assignments.user_id</code></td></tr>
+<tr><td>Composite attribute</td><td>decomposed into atomic columns during design</td><td>pharmacy address &rarr; <code>city</code> + <code>address</code>; strength = (<code>strength_mg</code> + <code>strength_basis</code>)</td></tr>
+<tr><td>Multivalued attribute</td><td>moved to its own relation (1NF)</td><td>a medicine's ingredients &rarr; <code>medicine_ingredients</code></td></tr>
+<tr><td>Derived attribute</td><td>1 stored generated column + computed ones</td><td>stored: <code>low_stock_alerts.open_alert_key</code>; computed: availability band (<code>fn_availability_band</code>), composition text, <code>is_eligible</code> (view), low-stock status</td></tr>
+<tr><td>Optional / NULLable</td><td>16 columns</td><td><code>medicine_categories.parent_id</code>, <code>order_items.dispensed_medicine_id</code>, <code>shortage_entries.resolved_at</code>, <code>inventory_movements.batch_no</code></td></tr>
+<tr><td>Enumerated (ENUM)</td><td>13 columns</td><td><code>users.role</code>, <code>orders.status</code>, <code>medicines.dosage_form</code></td></tr>
+<tr><td>Descriptive attribute of a relationship</td><td>on associative tables</td><td><code>inventory.quantity</code>, <code>inventory.reorder_level</code>, <code>medicine_ingredients.strength_mg</code></td></tr>
+<tr><td>Semi-structured (MongoDB, outside the relational model)</td><td>document fields</td><td><code>feed_events.payload</code>, <code>inventory_feed.metadata</code>, <code>flags[]</code></td></tr>
+</table>
+</body></html>
