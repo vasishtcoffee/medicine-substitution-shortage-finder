@@ -4,6 +4,10 @@ Academic DBMS project: search medicines and pharmacy availability, inspect exact
 
 This is an academic test project not intended for clinical use.
 
+## Teammate checkout
+
+The updated project is on branch **polish/viva-eight-phases**. Start with [teammate handoff](docs/TEAMMATE_HANDOFF.md) for checkout commands, setup, verification results and remaining work.
+
 ## Stack
 
 MySQL 8/InnoDB, raw parameterized SQL, constraints/views/procedures/functions/triggers and database roles; MongoDB validators/indexes with outbox sync; FastAPI/Python 3.11+; Next.js 16.4.5 App Router, React 19.3.1 and TypeScript. The UI stays dark navy with coral primary actions.

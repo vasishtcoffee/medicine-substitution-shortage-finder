@@ -10,4 +10,4 @@ The user was asked to provide names/contributions beyond history. No such detail
 |---|---|---|
 | To be supplied | To be supplied | To be supplied |
 
-Inspect metadata with git log --all --format='%h | %an | %ad | %s' --date=short. Phase commits document polishing work, not original authorship. No push, deployment or merge was performed.
+Inspect metadata with git log --all --format='%h | %an | %ad | %s' --date=short. Phase commits document polishing work, not original authorship. The original polishing run did not push, deploy or merge; the later teammate-sharing workflow is described in TEAMMATE_HANDOFF.md.
