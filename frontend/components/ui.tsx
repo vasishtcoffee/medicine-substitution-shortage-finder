@@ -12,7 +12,18 @@ export function SafetyNotice({ compact = false }: { compact?: boolean }) {
 
 export function Pill({ value }: { value: string }) {
   const cls = value.toLowerCase().replace(/[^a-z]+/g, "-");
-  return <span className={`pill pill-${cls}`}>{value}</span>;
+  const status = statusPresentation(value);
+  return <span className={`pill pill-${cls}`}><span aria-hidden="true">{status.symbol}</span>{status.label}</span>;
+}
+
+/** Presentation only: enum values sent to the API remain unchanged. */
+export function statusPresentation(value: string) {
+  const states: Record<string, [string, string]> = {
+    COMPLETED: ["✓", "Completed"], APPROVED: ["✔", "Approved"], REJECTED: ["×", "Rejected"],
+    UNDER_REVIEW: ["◷", "Under review"], REQUESTED: ["↗", "Requested"], CANCELLED: ["−", "Cancelled"],
+  };
+  const [symbol, label] = states[value.toUpperCase()] ?? ["•", value.replaceAll("_", " ").toLowerCase().replace(/^./, (c) => c.toUpperCase())];
+  return { symbol, label };
 }
 
 export function Feedback({ loading, error, success }: { loading?: boolean; error?: string | null; success?: string | null }) {
@@ -28,10 +39,10 @@ export function Feedback({ loading, error, success }: { loading?: boolean; error
 export function Table({ columns, rows, empty = "Nothing to show." }: { columns: { key: string; label: string; render?: (row: Record<string, unknown>) => ReactNode }[]; rows: Record<string, unknown>[]; empty?: string }) {
   if (!rows.length) return <p className="muted">{empty}</p>;
   return (
-    <div className="table-wrap">
+    <div className="table-wrap" role="region" aria-label="Data table" tabIndex={0}>
       <table>
         <thead>
-          <tr>{columns.map((c) => <th key={c.key}>{c.label}</th>)}</tr>
+          <tr>{columns.map((c) => <th scope="col" key={c.key}>{c.label || "Actions"}</th>)}</tr>
         </thead>
         <tbody>
           {rows.map((r, i) => (

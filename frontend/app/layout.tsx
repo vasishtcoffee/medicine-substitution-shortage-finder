@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth";
-import { Header } from "@/components/Header";
+import { Header, Navigation } from "@/components/Header";
 import { SafetyNotice } from "@/components/ui";
 import "./globals.css";
 
@@ -14,9 +14,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <a className="skip-link" href="#main-content">Skip to content</a>
         <AuthProvider>
           <Header />
-          <main className="container">{children}</main>
+          <div className="app-shell">
+            <Navigation />
+            <main id="main-content" tabIndex={-1} className="container">{children}</main>
+          </div>
           <footer className="footer">
             <SafetyNotice compact />
           </footer>

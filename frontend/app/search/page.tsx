@@ -72,7 +72,7 @@ function Search() {
     <>
       <h1>Search &amp; availability</h1>
       <SafetyNotice />
-      <form onSubmit={run} className="row">
+      <form onSubmit={run} className="row search-form" aria-label="Search medicines">
         <label>
           Medicine, brand, ingredient or category
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. paracetamol" />
@@ -89,23 +89,23 @@ function Search() {
       <Feedback loading={loading} error={error} />
       {results && results.length === 0 && <p className="muted">No medicines match.</p>}
       {results?.map((m) => (
-        <div className="card" key={m.id}>
-          <strong>{m.name}</strong> <span className="muted">· {m.brand} · {m.category} · {m.dosage_form}</span>
+        <article className="card" key={m.id} aria-labelledby={`medicine-${m.id}`}>
+          <h2 className="medicine-title" id={`medicine-${m.id}`}>{m.name}</h2><p className="muted">{m.brand} · {m.category} · {m.dosage_form}</p>
           <div className="muted">{m.composition}</div>
           <div>
             {m.requires_prescription ? <Pill value="Prescription" /> : null} {m.in_shortage ? <Pill value="Open shortage" /> : null}{" "}
             {!m.substitution_allowed ? <Pill value="No substitution" /> : null}
           </div>
-          <p>
+          <ul className="availability" aria-label="Pharmacy availability">
             {m.availability.map((a) => (
-              <span key={a.pharmacy_id} style={{ marginRight: 12 }}>{a.pharmacy_name}: <Pill value={a.availability} /></span>
+              <li key={a.pharmacy_id}>{a.pharmacy_name}: <Pill value={a.availability} /></li>
             ))}
-          </p>
+          </ul>
           <div className="row">
             <button className="secondary" onClick={() => findSubstitutes(m)}>Find verified-composition candidates</button>
             {user?.role === "patient" && <button onClick={() => setOrderFor({ id: m.id, name: m.name })}>Order…</button>}
           </div>
-        </div>
+        </article>
       ))}
       <Feedback loading={candLoading} error={candError} />
       {cands && <Candidates data={cands} onOrder={user?.role === "patient" ? (id, name) => setOrderFor({ id, name }) : undefined} />}
@@ -116,9 +116,9 @@ function Search() {
 
 function Candidates({ data, onOrder }: { data: Cands; onOrder?: (id: number, name: string) => void }) {
   return (
-    <div className="card">
-      <h2>Candidates for {data.requested.name}</h2>
-      <p className="alert" style={{ background: "var(--warn-bg)", color: "var(--warn)" }}>
+    <section className="card" aria-labelledby="candidate-heading">
+      <h2 id="candidate-heading">Candidates for {data.requested.name}</h2>
+      <p className="alert warning">
         Status: <strong>pending pharmacist verification</strong>. These are composition matches, not a recommendation to substitute.
       </p>
       {data.candidates.length === 0 ? (
@@ -132,18 +132,20 @@ function Candidates({ data, onOrder }: { data: Cands; onOrder?: (id: number, nam
             { key: "pharmacies_stocking", label: "Pharmacies stocking" },
             { key: "quantity_here", label: "Units here (staff only)", render: (r) => (r.quantity_here ?? "hidden") as string },
             { key: "eligibility_reason", label: "Why eligible" },
+            { key: "verification_status", label: "Verification", render: (r) => <Pill value={String(r.verification_status)} /> },
             { key: "act", label: "", render: (r) => (onOrder ? <button className="secondary" onClick={() => onOrder(Number(r.medicine_id), String(r.name))}>Order…</button> : null) },
           ]}
           rows={data.candidates as unknown as Record<string, unknown>[]}
         />
       )}
-      <h3>Rejected near-misses</h3>
+      <details><summary>Rejected near-matches ({data.rejected.length})</summary>
       <Table
         columns={[{ key: "name", label: "Medicine" }, { key: "reject_reason", label: "Why it is NOT a match" }]}
         rows={data.rejected as unknown as Record<string, unknown>[]}
         empty="No near-misses."
       />
-    </div>
+      </details>
+    </section>
   );
 }
 

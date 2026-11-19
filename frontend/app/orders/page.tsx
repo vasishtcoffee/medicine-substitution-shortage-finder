@@ -44,9 +44,9 @@ function Orders() {
       {data && data.length === 0 && <p className="muted">No orders.</p>}
       {data?.map((o) => (
         <div className="card" key={o.order_id}>
-          <h3>
+          <h2>
             Order #{o.order_id} <Pill value={o.status} /> <span className="muted">{o.pharmacy_name} · {fmtDate(o.created_at)}{o.patient_name ? ` · ${o.patient_name}` : ""}</span>
-          </h3>
+          </h2>
           {o.prescription_note && <p className="muted">Prescription note: {o.prescription_note}</p>}
           {o.items.map((it) => (
             <div key={it.item_id} className="row">

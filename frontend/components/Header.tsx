@@ -20,23 +20,28 @@ export function Header() {
     <header className="header">
       <div className="header-inner">
         <span className="brand">Medicine Substitution &amp; Shortage Finder</span>
-        {user && (
-          <nav aria-label="Main">
-            {NAV.filter((n) => n.roles.includes(user.role)).map((n) => (
-              <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "active" : ""}>
-                {n.label}
-              </Link>
-            ))}
-          </nav>
-        )}
-        <span className="spacer" />
+        <span className="muted">{NAV.find((n) => path.startsWith(n.href))?.label}</span>
         {user && (
           <span className="who">
             {user.full_name} <span className={`pill pill-${user.role}`}>{user.role}</span>
+            {user.pharmacy_id && <span>Pharmacy #{user.pharmacy_id}</span>}
             <button className="link" onClick={logout}>Log out</button>
           </span>
         )}
       </div>
     </header>
   );
+}
+
+export function Navigation() {
+  const { user } = useAuth();
+  const path = usePathname();
+  return <aside className="sidebar">{user && <>
+    <p className="nav-label">Workspace</p>
+    <nav aria-label="Main">
+      {NAV.filter((n) => n.roles.includes(user.role)).map((n) => (
+        <Link key={n.href} href={n.href} aria-current={path.startsWith(n.href) ? "page" : undefined}>{n.label}</Link>
+      ))}
+    </nav>
+  </>}</aside>;
 }
