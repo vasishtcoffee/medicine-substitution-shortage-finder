@@ -1,15 +1,5 @@
 "use client";
 import type { ReactNode } from "react";
-import { SAFETY_NOTICE } from "@/lib/api";
-
-export function SafetyNotice({ compact = false }: { compact?: boolean }) {
-  return (
-    <p className={compact ? "safety compact" : "safety"} role="note">
-      <strong>Safety notice.</strong> {SAFETY_NOTICE}
-    </p>
-  );
-}
-
 export function Pill({ value }: { value: string }) {
   const cls = value.toLowerCase().replace(/[^a-z]+/g, "-");
   const status = statusPresentation(value);

@@ -7,7 +7,7 @@ from mysql.connector import errors
 
 from . import config, sync
 from .errors import mysql_error_handler
-from .routers import alerts, auth, dashboard, feed, inventory, medicines, orders, search, sqldemo, syncr
+from .routers import alerts, auth, dashboard, feed, inventory, medicines, orders, search, syncr
 
 
 @asynccontextmanager
@@ -29,7 +29,7 @@ app = FastAPI(title="Medicine Substitution & Shortage Finder",
 app.add_exception_handler(errors.Error, mysql_error_handler)
 
 for r in (auth.router, medicines.router, search.router, inventory.router, alerts.router, orders.router,
-          feed.router, syncr.router, sqldemo.router, dashboard.router):
+          feed.router, syncr.router, dashboard.router):
     app.include_router(r)
 
 

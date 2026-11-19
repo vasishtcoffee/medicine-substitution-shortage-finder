@@ -1,9 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 
-export const SAFETY_NOTICE =
-  "This is an educational demonstration. Candidate matches are not medical advice or an authorization to substitute a medicine. A qualified pharmacist must verify the medicine and applicable prescription requirements before any substitution or sale.";
-
 export type Role = "patient" | "pharmacist" | "admin";
 export type User = { id: number; email: string; full_name: string; role: Role; pharmacy_id: number | null };
 

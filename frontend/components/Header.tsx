@@ -10,7 +10,6 @@ const NAV: { href: string; label: string; roles: Role[] }[] = [
   { href: "/orders", label: "Orders", roles: ["patient", "pharmacist"] },
   { href: "/inventory", label: "Inventory & alerts", roles: ["pharmacist", "admin"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
-  { href: "/feed-lab", label: "Feed Lab", roles: ["admin"] },
 ];
 
 export function Header() {

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { Header, Navigation } from "@/components/Header";
-import { SafetyNotice } from "@/components/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,9 +20,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Navigation />
             <main id="main-content" tabIndex={-1} className="container">{children}</main>
           </div>
-          <footer className="footer">
-            <SafetyNotice compact />
-          </footer>
         </AuthProvider>
       </body>
     </html>

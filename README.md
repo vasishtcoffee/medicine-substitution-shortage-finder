@@ -2,7 +2,7 @@
 
 DBMS Level 3 mini-project (PES University, Aug–Dec 2026): find in-stock medicines and **pharmacist-verified composition-matching** candidates when a medicine is short.
 
-> **Safety notice.** This is an educational demonstration. Candidate matches are not medical advice or an authorization to substitute a medicine. A qualified pharmacist must verify the medicine and applicable prescription requirements before any substitution or sale. All data is synthetic; shortages are demo records, not live or official data.
+This is an academic test project not intended for clinical use.
 
 ## Stack
 

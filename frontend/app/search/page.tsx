@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { RoleGate, useAuth } from "@/lib/auth";
 import { api, useApi } from "@/lib/api";
-import { Feedback, Pill, SafetyNotice, Table, confirmAction } from "@/components/ui";
+import { Feedback, Pill, Table, confirmAction } from "@/components/ui";
 
 type Band = { pharmacy_id: number; pharmacy_name: string; availability: string };
 type Med = {
@@ -71,7 +71,6 @@ function Search() {
   return (
     <>
       <h1>Search &amp; availability</h1>
-      <SafetyNotice />
       <form onSubmit={run} className="row search-form" aria-label="Search medicines">
         <label>
           Medicine, brand, ingredient or category
@@ -119,7 +118,7 @@ function Candidates({ data, onOrder }: { data: Cands; onOrder?: (id: number, nam
     <section className="card" aria-labelledby="candidate-heading">
       <h2 id="candidate-heading">Candidates for {data.requested.name}</h2>
       <p className="alert warning">
-        Status: <strong>pending pharmacist verification</strong>. These are composition matches, not a recommendation to substitute.
+        Status: <strong>pending pharmacist verification</strong>.
       </p>
       {data.candidates.length === 0 ? (
         <p>{data.message ?? "No verified composition-matching candidate"}</p>

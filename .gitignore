@@ -11,3 +11,5 @@ node_modules/
 .vscode/
 .tools/
 .env.local
+work/
+*.tsbuildinfo

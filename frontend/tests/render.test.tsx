@@ -1,15 +1,15 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { Feedback, Pill, SafetyNotice, Table } from "@/components/ui";
-import { api, ApiError, SAFETY_NOTICE } from "@/lib/api";
+import { Feedback, Pill, Table } from "@/components/ui";
+import { api, ApiError } from "@/lib/api";
 
 afterEach(cleanup);
 
 describe("shared components", () => {
-  it("shows the mandatory safety notice", () => {
-    render(<SafetyNotice />);
-    expect(screen.getByRole("note").textContent).toContain("educational demonstration");
-    expect(SAFETY_NOTICE).toContain("A qualified pharmacist must verify");
+  it("keeps feedback focused on operational messages", () => {
+    render(<Feedback success="Stock received" />);
+    expect(screen.queryByRole("note")).toBeNull();
+    expect(screen.getByRole("status").textContent).toBe("Stock received");
   });
 
   it("renders loading, error and success states", () => {

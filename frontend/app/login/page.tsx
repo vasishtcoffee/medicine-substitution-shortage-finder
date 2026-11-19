@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import { Feedback, SafetyNotice } from "@/components/ui";
+import { Feedback } from "@/components/ui";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,7 +29,6 @@ export default function LoginPage() {
   return (
     <div className="login card">
       <h1>Sign in</h1>
-      <SafetyNotice />
       <form onSubmit={submit}>
         <div className="row">
           <label>
@@ -44,7 +43,7 @@ export default function LoginPage() {
         </div>
       </form>
       <Feedback error={error} />
-      <p className="muted">Local demo only. Demo logins are listed in the README (admin@, pharmacist1@, patient1@ medsub.demo).</p>
+      <p className="muted">Demo logins are listed in the README (admin@, pharmacist1@, patient1@ medsub.demo).</p>
     </div>
   );
 }

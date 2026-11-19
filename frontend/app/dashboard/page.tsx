@@ -46,7 +46,7 @@ function Dashboard() {
         <p className="muted">Search medicines, check pharmacy availability and request an order.</p>
         <Link className="button primary" href="/search">Search medicines</Link>
       </section>
-      <div className="grid"><Stat label="Open medicine shortages (demo data)" value={data.open_shortages} /></div>
+      <div className="grid"><Stat label="Open medicine shortages" value={data.open_shortages} /></div>
       <Statuses title="My orders" counts={data.my_orders_by_status} />
       <section className="quick-links" aria-labelledby="patient-links"><h2 id="patient-links">Quick links</h2><ul><li><Link href="/orders">My orders</Link></li></ul></section>
     </>}
@@ -54,7 +54,7 @@ function Dashboard() {
       <p><Link className="button primary" href="/orders">Review orders</Link></p>
       <div className="grid">
         <Stat label="Open low-stock alerts" value={data.open_low_stock_alerts} />
-        <Stat label="Open shortages (demo data)" value={data.open_shortages} />
+        <Stat label="Open shortages" value={data.open_shortages} />
       </div>
       <Statuses title="Orders at my pharmacy" counts={data.orders_by_status} />
       <section className="quick-links" aria-labelledby="pharmacy-links"><h2 id="pharmacy-links">Quick links</h2><ul><li><Link href="/inventory">Inventory &amp; alerts</Link></li></ul></section>
@@ -68,7 +68,7 @@ function Dashboard() {
       </div>
       <Statuses title="All orders" counts={data.orders_by_status} />
       <section className="quick-links" aria-labelledby="admin-links"><h2 id="admin-links">Quick links</h2><ul>
-        <li><Link href="/admin">Catalog, shortages &amp; users</Link></li><li><Link href="/feed-lab">Feed Lab</Link></li>
+        <li><Link href="/admin">Catalog, shortages &amp; users</Link></li>
       </ul></section>
     </>}
   </>;

@@ -60,6 +60,4 @@ Interactive OpenAPI: `http://localhost:8000/docs` (FastAPI directly) — the bro
 | GET | `/sync/outbox` | A | Outbox rows + counts | — |
 | POST | `/sync/resync` | A | Re-enqueue all MySQL inventory and drain | — |
 | POST | `/sync/retry-failed` | A | Reset exhausted FAILED rows and drain | — |
-| GET | `/admin/sql-demo` | A | List whitelisted named queries | 403 |
-| POST | `/admin/sql-demo/{name}/run` | A | Run one whitelisted read-only query | 404 unknown, 409 not runnable |
 | GET | `/health` | public | Liveness + safety notice | — |

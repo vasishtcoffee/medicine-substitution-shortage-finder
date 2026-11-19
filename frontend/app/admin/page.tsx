@@ -4,7 +4,7 @@ import { RoleGate } from "@/lib/auth";
 import { api, fmtDate, useApi } from "@/lib/api";
 import { Feedback, Pill, Table, confirmAction } from "@/components/ui";
 
-type Tab = "catalog" | "pharmacies" | "shortages" | "users" | "sql";
+type Tab = "catalog" | "pharmacies" | "shortages" | "users";
 
 export default function AdminPage() {
   return (
@@ -16,7 +16,7 @@ export default function AdminPage() {
 
 function Admin() {
   const [tab, setTab] = useState<Tab>("catalog");
-  const tabs: [Tab, string][] = [["catalog", "Catalog"], ["pharmacies", "Pharmacies"], ["shortages", "Shortages"], ["users", "Users & assignments"], ["sql", "SQL Demo"]];
+  const tabs: [Tab, string][] = [["catalog", "Catalog"], ["pharmacies", "Pharmacies"], ["shortages", "Shortages"], ["users", "Users & assignments"]];
   return (
     <>
       <h1>Admin</h1>
@@ -27,7 +27,6 @@ function Admin() {
       {tab === "pharmacies" && <Pharmacies />}
       {tab === "shortages" && <Shortages />}
       {tab === "users" && <Users />}
-      {tab === "sql" && <SqlDemo />}
     </>
   );
 }
@@ -222,7 +221,7 @@ function Shortages() {
     e.preventDefault();
     try {
       await api("/shortages", { body: { medicine_id: medicine, severity, note: note || null } });
-      setMsg({ ok: "Shortage entry added (synthetic demo data)." });
+      setMsg({ ok: "Shortage entry added." });
       sh.reload();
     } catch (err) {
       setMsg({ err: (err as Error).message });
@@ -252,7 +251,6 @@ function Shortages() {
 
   return (
     <>
-      <p className="muted">Shortage entries are synthetic demo records (source = demo), not live or official shortage data.</p>
       <form className="card row" onSubmit={add}>
         <label>Medicine
           <select required value={medicine} onChange={(e) => setMedicine(Number(e.target.value))}>
@@ -354,43 +352,6 @@ function Users() {
         ]}
         rows={(users.data ?? []) as unknown as Record<string, unknown>[]}
       />
-    </>
-  );
-}
-
-type Q = { name: string; file: string; purpose: string; why: string; expected: string; runnable: boolean; sql: string };
-
-function SqlDemo() {
-  const list = useApi<Q[]>("/admin/sql-demo");
-  const [result, setResult] = useState<{ name: string; columns: string[]; rows: Record<string, unknown>[] } | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function run(name: string) {
-    setErr(null);
-    try {
-      setResult(await api(`/admin/sql-demo/${name}/run`, { method: "POST", body: {} }));
-    } catch (e) {
-      setErr((e as Error).message);
-    }
-  }
-
-  return (
-    <>
-      <p className="muted">Only named, read-only queries from <code>database/sql/queries.sql</code> and <code>advanced.sql</code> can run here. No arbitrary SQL.</p>
-      <Feedback loading={list.loading} error={list.error ?? err} />
-      {list.data?.map((q) => (
-        <div className="card" key={q.name}>
-          <strong>{q.name}</strong> <span className="muted">({q.file})</span>
-          <p>{q.purpose}</p>
-          {q.why && <p className="muted"><em>Why it qualifies:</em> {q.why}</p>}
-          <pre>{q.sql}</pre>
-          {q.expected && <p className="muted">Expected: {q.expected}</p>}
-          {q.runnable ? <button onClick={() => run(q.name)}>Run</button> : <span className="muted">Not runnable from the web (needs a request context) — see scripts/run_sql_demo.py</span>}
-          {result?.name === q.name && (
-            <Table columns={result.columns.map((c) => ({ key: c, label: c }))} rows={result.rows} empty="No rows." />
-          )}
-        </div>
-      ))}
     </>
   );
 }
