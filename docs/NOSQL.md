@@ -38,7 +38,7 @@ Indexes: `ix_feed_pharmacy`, `ix_feed_medicine`, `ix_feed_last_updated`.
 
 This variable `payload` is the semi-structured justification for a document store. Indexes: `ix_events_source`, `ix_events_occurred`, `ix_events_ph_med`.
 
-## 2. CRUD (admin only; API + Feed Lab screen)
+## 2. CRUD (admin-only operational API and native viva tooling)
 
 | Operation | API | Rules |
 |---|---|---|
@@ -58,13 +58,10 @@ This variable `payload` is the semi-structured justification for a document stor
 * **Failure handling:** if MongoDB is down the sale is already committed in MySQL; the worker records the error, stops hammering the server (it breaks out after the first connection failure) and rows stay `PENDING`/`FAILED`. When MongoDB returns, a normal run drains them. If documents were lost or deleted, `POST /sync/resync` (`sp_enqueue_full_resync`) re-enqueues every inventory row.
 * Viva note: this is **eventual consistency** — MongoDB can lag MySQL, never the reverse.
 
-## 4. Status of verification
+## 4. Observed verification — 19 November 2026
 
-Tests in `tests/nosql/test_feed_and_sync.py` run on **mongomock** by default and passed (14/14, incl. the `$jsonSchema` validator and `init_mongo.py` idempotency tests) against a **real MongoDB 7.0.14** (portable zip run locally). The real run found and fixed an unstable-pagination bug. To repeat:
+The final full command ran against **real MySQL 8.0.33 and MongoDB 8.2.1**, with data on V:. All 110 selected real backend tests passed, including feed/event CRUD, validators/indexes, idempotency and an owned real-server stop/restart test. Three existing _MongoDown fault-injection tests were excluded from that count and passed separately with mongomock. See [Testing](TESTING.md) and [test explanations](../tests/TESTS_EXPLAINED.md).
 
-```powershell
-docker compose up -d mongo
-$env:MONGO_TEST_URI = "mongodb://127.0.0.1:27017"
-python -m pytest tests/nosql -q
-python scripts/init_mongo.py
-```
+Run python scripts/check_all.py to repeat with owned disposable servers. Do not stop a normal/shared MongoDB service. Missing real services cause a blocked/failed result. Native [mongosh script](../viva/mongodb/01_crud.js) is provided, but mongosh was unavailable here, so its execution is unverified.
+
+The full browser workflow is unfinished after a controller policy stop; no UI-only message is used as proof of persisted effects. See [browser record](BROWSER_VERIFICATION.md).

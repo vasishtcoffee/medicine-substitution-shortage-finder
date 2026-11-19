@@ -46,7 +46,7 @@ USED = {
     "sp_reject_order": "API: POST /orders/{id}/reject. UI: Orders → Reject order",
     "sp_complete_order": "API: POST /orders/{id}/complete. UI: Orders → Complete sale. The transaction: lock, check, deduct, ledger, outbox, status",
     "sp_write_outbox": "Called inside sp_receive_stock, sp_adjust_stock, sp_set_reorder_level, sp_complete_order (same transaction)",
-    "sp_enqueue_full_resync": "API: POST /sync/resync. UI: Feed Lab → Resync",
+    "sp_enqueue_full_resync": "API: POST /sync/resync; operational backend recovery; viva/README.md",
     "sp_admin_create_user": "API: POST /admin/users. UI: Admin → Users",
     "sp_admin_assign_pharmacist": "API: PUT /admin/users/{id}/pharmacy. UI: Admin → Users",
     "sp_admin_set_user_active": "API: PATCH /admin/users/{id}/active. UI: Admin → Users",
@@ -57,7 +57,7 @@ USED = {
     "sp_require_pharmacy_access": "Guard: pharmacist may only touch the assigned pharmacy",
 }
 QUERY_USED = {
-    "q_join_availability": "UI: Admin → SQL Demo (Run). API: POST /admin/sql-demo/{name}/run. Test: test_query_library_runs…",
+    "q_join_availability": "Native CLI: scripts/run_sql_demo.py and viva/mysql/03_queries_routines.sql. Test: test_query_library_runs…",
     "q_nested_no_stock": "Same (nested subquery). Idea reused in sp_complete_order (IN subquery)",
     "q_correlated_below_own_avg": "Same (correlated subquery)",
     "q_recursive_category_descendants": "Same (recursive CTE rooted at a name)",
@@ -116,9 +116,9 @@ def main():
               "| `backend/app/main.py` | App, routers, MySQL-error → HTTP handler, background sync |",
               "| `backend/app/db.py` | Role-specific connection pools, request context, `call()` for stored procedures, deadlock retry |",
               "| `backend/app/security.py` | argon2 hashing, JWT cookie, `get_identity`, `require_roles` |",
-              "| `backend/app/routers/*.py` | One router per domain: auth, medicines (catalog/admin), search, inventory, alerts, orders, feed (MongoDB CRUD), syncr, sqldemo, dashboard |",
+              "| `backend/app/routers/*.py` | One router per domain: auth, medicines (catalog/admin), search, inventory, alerts, orders, feed (MongoDB CRUD), syncr, dashboard |",
               "| `backend/app/sync.py`, `mongo.py` | Outbox worker, MongoDB collections/validators |",
-              "| `frontend/src/app/*/page.tsx` | The 7 screens; `frontend/src/lib/api.ts` is the only place that talks to the backend |",
+              "| `frontend/app/*/page.tsx` | Six retained screens; browser calls use `frontend/lib/api.ts`, server helpers use `frontend/lib/db.ts` |",
               "", "Interactive backend: with the API running open http://localhost:8000/docs (Swagger UI): `POST /auth/login`, then call any endpoint (the session cookie is kept by the browser)."]
     (ROOT / "docs" / "CODE_MAP.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"wrote docs/CODE_MAP.md ({len(objs)} objects, {len(queries())} named queries)")

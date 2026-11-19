@@ -32,7 +32,7 @@ The real outage test above uses a physical server stop/restart. Other real tests
 
 ## Frontend groups
 
-`frontend/tests/render.test.tsx` covers loading/error/success messages, table rows/empty states, stock badges and same-origin API requests/error details. The former mandatory-notice assertion now verifies operational feedback without a notice because Phase 2 intentionally removed notices. `frontend/tests/session.test.tsx` covers the cookie-presence redirect loop, absent-cookie routing, backend validation, 401 recovery and 403 preservation. Browser checks are documented separately; jsdom is not a browser rendering or assistive-technology test.
+`frontend/tests/render.test.tsx` covers loading/error/success messages, table rows/empty states, stock badges and same-origin API requests/error details. The former mandatory-notice assertion now verifies operational feedback without a notice because Phase 2 intentionally removed notices. `frontend/tests/session.test.tsx` covers the cookie-presence redirect loop, absent-cookie routing, backend validation, 401 recovery and 403 preservation. `frontend/tests/search.test.tsx` covers clearing obsolete order tasks, invalidating candidate responses after a pharmacy change, and out-of-order search responses. Browser checks are documented separately; jsdom is not a browser rendering or assistive-technology test.
 
 ## Data isolation and cleanup
 

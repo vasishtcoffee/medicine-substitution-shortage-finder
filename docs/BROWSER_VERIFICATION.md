@@ -30,7 +30,7 @@ Clicking “Request order” opened a native confirmation. The browser controlle
 
 Therefore the browser patient-order → pharmacist-review/approval/completion → stock → alert → MongoDB workflow is **not completed or claimed**. The separately reported real integration suite does verify persisted workflow/outage effects, but it is not a substitute for this unfinished browser exercise. The intended 120 → 5 stock change was not observed or claimed.
 
-The viewport override could not be reset after browser control stopped. The test tab may retain its confirmation/1280 × 900 override; dismiss/close it manually. Do not submit again without checking the dedicated demo database. No test order existed at the last database read.
+The viewport override could not be reset after browser control stopped. The test tab may retain its confirmation/1280 × 900 override; dismiss/close it manually. The final database read confirmed **0** orders with the test note. Task-owned API/UI/database servers were then stopped and the named demo/viva databases removed; create a fresh dedicated environment before another demonstration. No task shutdown targeted a shared service; V: log/data folders remain for review. Final Windows inventory showed MySQL80 running and MongoDB service stopped. The cause of that service-state change was not established; the task's Mongo shutdown verified its own separate V: data directory first.
 
 ## Implemented, automated and manual are different
 

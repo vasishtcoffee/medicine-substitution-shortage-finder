@@ -1,64 +1,67 @@
-# Testing — actual results
+# Testing — observed results, 19 November 2026
 
-Recorded on 2026-10-15, Windows 11, Python 3.12.3, Node 24, **MySQL 8.0.33 (local install)**. Docker was **not installed**. MongoDB tests ran twice: on **mongomock** (default) and against a **real MongoDB 7.0.14** (portable Windows zip from fastdl.mongodb.org, run locally from `.tools/`, git-ignored). Nothing below is claimed unless it was executed; "not run" means it was not executed here, with the command to run it.
+Windows environment, Python 3.12.6, Node 22.19.0, Next.js 16.4.5. Real MySQL **8.0.33** and MongoDB **8.2.1** executables were available; V: existed. All full-command server data/logs were created on V:. No Docker or MySQL 8.4 run is claimed.
 
-Run everything:
+## Final full-command run
 
-```powershell
-python scripts/bootstrap_db.py medsub_test   # once (tests rebuild medsub_test themselves)
-python -m pytest tests -q                    # backend: SQL, security, API, NoSQL
-cd frontend; npm run lint; npm run typecheck; npm run build; npm test
-python scripts/check_schema_docs.py          # ER diagram vs live schema
-```
+Command, from repository root:
 
-Do not run two pytest processes at once — they share the `medsub_test` database.
+    .\.venv\Scripts\python.exe scripts/check_all.py
 
-## Summary
+Run ID **2b158896a0aa**. Summary: work/checks_2b158896a0aa/summary.json; per-check logs, backend JUnit XML and frontend JSON are alongside it and included in delivered evidence.
 
-| Suite | Result |
+| Individual test group | Passed | Failed | Skipped | Excluded from this invocation |
+|---|---:|---:|---:|---|
+| Real MySQL/MongoDB backend | 110 | 0 | 0 | 3 fault-injection stub tests, executed separately |
+| Separate stub invocation | 3 | 0 | 0 | 110 already-run real tests (deselected to avoid duplicate counting) |
+| Frontend jsdom/component/session/search | 17 | 0 | 0 | 0 |
+| Unique individual tests executed | **130** | **0** | **0** | **0 left unrun within the collected suite** |
+
+The three stub exclusions are named/explained in [TESTS_EXPLAINED.md](../tests/TESTS_EXPLAINED.md). They use _MongoDown and cannot prove a physical outage. The additional real outage test starts/stops/restarts only a server it created, then reads persisted MySQL stock/order/outbox and MongoDB feed/event results.
+
+| Non-test check | Observed result |
 |---|---|
-| `pytest tests` (backend, mongomock) | **105 passed, 1 skipped** (the skipped one needs a real MongoDB) |
-| `MONGO_TEST_URI=mongodb://127.0.0.1:27017 pytest tests/nosql` (real MongoDB 7.0.14) | **14 passed, 0 skipped** |
-| `python scripts/init_mongo.py` run twice on real MongoDB | 1st: both collections `created`; 2nd: `validator updated`; same 3+3 indexes, no error (idempotent) |
-| Concurrency test repeated 5× | 5/5 passed |
-| Frontend `eslint .`, `tsc --noEmit`, `next build` | passed (0 errors) |
-| Frontend `vitest run` | 6 passed |
-| `check_schema_docs.py` | OK (15 tables, 97 columns) |
-| `run_sql_demo.py` on `dml_demo.sql`, `queries.sql`, `advanced.sql` | exit 0; outputs in `docs/sql_output/` |
-| Browser check (built-in browser) | login, role-filtered nav, search with bands, candidate explanations, Feed Lab outbox/outage state were exercised. The full patient → pharmacist → sale click-through was **not** driven through the browser; the same flow is covered by `test_full_flow_patient_order_to_completed_sale` at API level. |
+| ESLint | Passed, exit 0 |
+| TypeScript | Passed, exit 0 |
+| Contrast script | Passed, 35/35 combinations |
+| Production build | Passed, Next.js 16.4.5 |
+| Real-service preflight | Passed; owned data on V: |
+| Dependency audit | **Failed, exit 1:** 8 moderate and 2 critical affected development-tool packages |
 
-## P0 tests (section 12)
+These are **six non-test checks: five passed, one failed**. The full command correctly returned **exit 1**, despite all 130 tests passing. No service failure was silently replaced by a mock success. Admin native-button semantics/reduced-motion source corrections were also followed by lint, typecheck and production build; OS preference/browser behavior remains unverified.
 
-| Test | Purpose | Expected | Actual | Status |
-|---|---|---|---|---|
-| `test_schema_and_seed_load_twice_without_duplicates` | idempotent migrate + seed | same row counts; 16 base tables | as expected | passed |
-| `test_constraint_violation[…]` (14 cases) | each constraint class rejects bad data (NOT NULL, UNIQUE, CHECK incl. negative stock, ENUM, FK, ALTER-added CHECKs) | MySQL errno 1048/1062/3819/1265/1452/1451 | as expected | passed |
-| `test_trigger_one_alert_no_duplicate_then_auto_resolve` | trigger creates one alert, no duplicate, auto-resolves, reopens | counts 0→1→1→0→1 | as expected | passed |
-| `test_only_one_open_alert_per_pharmacy_medicine` | generated-column unique key | duplicate OPEN rejected (1062) | as expected | passed |
-| `test_valid/invalid_status_transition_*` (12 cases) | order state machine in the DB | invalid → 45409 | as expected | passed |
-| `test_valid_sale_deducts_exactly_and_writes_ledger_and_outbox` | exact deduction | qty − 2, SALE row, outbox rows | as expected | passed |
-| `test_insufficient_stock_rejected_with_no_partial_rows` | atomicity | 45409; item A rolled back; no outbox rows | as expected | passed |
-| `test_two_concurrent_sales_cannot_oversell` | concurrency | one COMPLETED, one 45409, qty 20 | as expected (after the locking-read fix; see DESIGN decisions) | passed |
-| `test_repeating_complete_order_fails` | idempotency guard | 45409, no double deduction | as expected | passed |
-| `test_candidates…` (10 tests) | eligible cases, every ineligible seed case incl. look-alike, combination product, empty result, ranking, no quantity leak | see file | as expected | passed |
-| `tests/security/*` (22) | all section 6 DB-level tests + context isolation | 1142/1370/454xx errors; own-rows only | as expected | passed |
-| `tests/api/test_api.py` (21) + `test_docs_match.py` | 401/403, login without enumeration, search bands, candidates, CRUD, full flow, isolation, SQL demo whitelist, docs match routes | see file | as expected | passed |
-| `tests/nosql` — create/read/filter/paginate/update/delete, sale → Mongo update, outage keeps sale + outbox pending + resync repairs, bounded retries, delete leaves MySQL untouched | NoSQL behaviour | see file | as expected on mongomock **and real MongoDB** | passed |
-| `test_validator_rejects_bad_documents_and_init_is_idempotent` | `$jsonSchema` validation, `init_mongo.py` idempotency | WriteError on bad docs; same result twice | WriteError on bad docs; same result twice | passed (real MongoDB 7.0.14) |
-| Real MongoDB end to end (server `$jsonSchema`, index creation, `collMod`) | rubric 4 | validator + indexes work | as expected | passed |
-| Real-MongoDB run found a bug: `test_read_with_filters_and_pagination` failed because many documents share one `last_updated`, so page order was unstable | pagination | disjoint pages | fixed by sorting on `(last_updated desc, _id asc)` in `routers/feed.py`; mongomock had hidden it | passed after fix |
-| MySQL 8.4 via `docker compose up` | compose health, same schema on 8.4 | — | — | **not run** (Docker not installed) |
+The runner automatically creates a fresh server directory V:/Codex/medsub-checks/<run_id>, dynamic loopback ports, and per-invocation databases medsub_test_<run_id>_real and medsub_feed_test_<run_id>_real. The separate stub invocation uses medsub_test_<run_id>_stubs plus mongomock. The real-outage test owns a separate medsub_outage_test_<uuid> database. Fixtures reject pre-existing names and print their exact cleanup scope before dropping only databases created during that invocation. Owned processes are stopped in finally; folders/logs are retained for review.
 
-## P1
+## Verification commands and progression
 
-| Test | Status |
+| Actually run | Actual result |
 |---|---|
-| Frontend lint / type check / build | passed |
-| Page-render tests (shared components, api client) | passed (6) |
-| One end-to-end browser flow (patient search → order → pharmacist approve → complete → stock and feed updated) | **partially run** (see summary); API-level equivalent passed |
-| `scripts/check_schema_docs.py` | passed |
+| Initial npm ci in the C: clone | Failed ENOSPC; moved this task's clone to V: and reran successfully with cache/temp on V: |
+| Phase 1 npm run lint; npm run typecheck; npm test | Lint/typecheck passed, 6 frontend tests passed |
+| Phase 2 same frontend checks; python viva/prepare_sql.py medsub_viva_20261119 | Checks passed, 6 tests; renderer produced SQL without executing it |
+| python -m pytest tests/api/test_sessions.py tests/security -q --junitxml=work/phase3.xml | 27 passed (5 new session + 22 security), 0 failed/skipped |
+| Existing route-doc test invoked before change; public OpenAPI/document comparison | Existing test failed; documentation and schema agreed on all 55 operations. Internal lazy router enumeration omitted included routes. |
+| python -m pytest tests/api/test_docs_match.py -q --junitxml=work/phase4.xml | 1 passed after public-schema correction |
+| npm install --save-exact next@16.4.5 eslint-config-next@16.4.5; lint/typecheck/test/build/audit | Build/checks passed, 14 tests; audit failed with findings recorded in DEPENDENCY_REVIEW.md |
+| First full check run a30aca62e2a6 | 126 passed, 1 failed, 0 skipped. My new rollback test wrongly expected direct UPDATE to enqueue outbox rows. Existing behavior was correct: procedures call sp_write_outbox. Corrected the test/native trigger-demo explanation without changing app logic. |
+| Corrected Phase 6 full run e0e650cf3bab | 127 passed, 0 failed/skipped: 110 real + 3 stub + 14 frontend. Audit still failed. |
+| Phase 7 new search tests | All 17 frontend tests passed. An initial TypeScript-only failure used an unsupported Testing Library option; removed it, reran typecheck/build successfully. |
+| Final full check run 2b158896a0aa | 130 tests passed; check/audit status above |
 
-## Known test caveats
+Deprecation warnings were emitted by Starlette's current httpx TestClient integration and mysql-connector stored_results. They were not silently counted as failures or suppressed. Dependencies in requirements.txt remain ranges; this is the observed installed environment, not a universal reproducibility guarantee.
 
-* `npm audit` reports vulnerabilities in dev tooling dependencies; not triaged.
-* The API tests use FastAPI's `TestClient`; the real uvicorn + Next.js proxy path was exercised only manually in the browser.
+## Native tooling actually exercised
+
+A new medsub_viva_polish_20261119 schema was confirmed absent before creation on the task-owned MySQL server at port 3311. Ran bootstrap, rendered existing migration SQL, mysql CLI SOURCE viva/mysql/01_ddl.sql, seed, and native 02/03/04 scripts. Reviewed DML brand update, cascade count 0, rollback count 0, category/function/ranking results and trigger alert counts **0→1→1→0**. The trigger demo initially described outbox writes incorrectly; corrected and reran it. A separate limited patient-service mysql connection could read availability; direct inventory SELECT and UPDATE each returned expected **1142** denial. Those expected SQL errors are security evidence, not failed unit tests.
+
+Commands were executed via work/verify_viva.py and work/recheck_trigger.py, which invoke the actual mysql executable with source/execute arguments and local environment credentials (no secrets in output). Native stdout logs and results JSON are in delivered evidence. Mongo collection initialization also ran against the dedicated viva database.
+
+**Mongosh unavailable:** no mongosh CLI script run is claimed. Pymongo real-server tests are independent evidence of MongoDB functionality.
+
+## Browser and manual limits
+
+See [browser verification](BROWSER_VERIFICATION.md) for exact actions, dimensions, reproduction steps and fixes. Patient login/dashboard/search/candidates were tested in real Chrome, including 320px table containment, pending login/loading and wrong-password feedback. Two stale task/candidate problems were reproduced and retested after fixing. Browser control stopped at native order confirmation because Windows URL confidence was insufficient. A database query found no order with the unique test note at the last read.
+
+The full browser workflow, other-role browser layouts, complete keyboard/focus traversal, 200% zoom, screen reader, real devices, OS motion/contrast preference rendering and a full automated accessibility scan remain **unverified**. These are manual/blocked checks, not skipped pytest cases. Source/contrast checks do not establish full WCAG conformance. No “1 Insight” project component was found.
+
+Existing docs/sql_output files are prior repository artifacts, not new execution evidence from this task. ER diagram generation/comparison was excluded and was not rerun. Contribution ownership/originality and external PR/review participation remain unverified.
