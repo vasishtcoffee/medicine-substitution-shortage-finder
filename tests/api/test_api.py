@@ -24,7 +24,6 @@ def test_wrong_role_gets_403(pat1, ph1, admin):
     assert pat1.get("/inventory").status_code == 403
     assert pat1.get("/alerts").status_code == 403
     assert pat1.get("/admin/users").status_code == 403
-    assert pat1.get("/admin/sql-demo").status_code == 403
     assert pat1.post("/orders/1/approve").status_code == 403
     assert ph1.post("/sync/run").status_code == 403
     assert ph1.get("/feed/inventory").status_code == 403
@@ -204,15 +203,6 @@ def test_dashboards_per_role(pat1, ph1, admin):
     assert d["pharmacy"] == "City Care Pharmacy" and "orders_by_status" in d
     assert "sync_pending" in admin.get("/dashboard").json()
 
-
-def test_sql_demo_runs_only_whitelisted_queries(admin, ph1):
-    lst = admin.get("/admin/sql-demo").json()
-    assert {"q_nested_no_stock", "q_correlated_below_own_avg", "cte_category_tree"} <= {q["name"] for q in lst}
-    r = admin.post("/admin/sql-demo/q_nested_no_stock/run")
-    assert r.status_code == 200 and len(r.json()["rows"]) == 2
-    assert admin.post("/admin/sql-demo/DROP TABLE users/run").status_code == 404
-    assert admin.post("/admin/sql-demo/demo_candidates/run").status_code == 409     # CALL demos are not runnable from the web
-    assert ph1.post("/admin/sql-demo/q_nested_no_stock/run").status_code == 403
 
 
 def test_admin_crud_on_pharmacies_shortages_and_medicine_update(admin, pat1, reset_data):

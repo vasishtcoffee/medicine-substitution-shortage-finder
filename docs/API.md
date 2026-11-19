@@ -2,7 +2,7 @@
 
 Interactive OpenAPI: `http://localhost:8000/docs` (FastAPI directly) — the browser uses the same routes under `/api/*` on the Next.js origin (`/api/orders/mine` → `/orders/mine`). Auth is an httpOnly `medsub_session` cookie set by `/auth/login`. Common errors: **401** not signed in / bad token / inactive user, **403** role or pharmacy not allowed, **404** not found, **409** conflict (state, duplicate, constraint, insufficient stock), **422** invalid input, **503** MongoDB unavailable (feed routes only).
 
-`tests/api/test_docs_match.py` fails if this table and the routes in the code differ. Roles: `any` = any signed-in role, `P` patient, `Ph` pharmacist, `A` admin.
+`tests/api/test_docs_match.py` reads the public `/openapi.json` and compares exact methods/paths with this table (55 retained operations). Backend 401 responses expire the session cookie; authenticated 403 responses preserve it. Roles: `any` = any signed-in role, `P` patient, `Ph` pharmacist, `A` admin.
 
 | Method | Path | Role | Purpose | Key errors |
 |---|---|---|---|---|
@@ -60,6 +60,4 @@ Interactive OpenAPI: `http://localhost:8000/docs` (FastAPI directly) — the bro
 | GET | `/sync/outbox` | A | Outbox rows + counts | — |
 | POST | `/sync/resync` | A | Re-enqueue all MySQL inventory and drain | — |
 | POST | `/sync/retry-failed` | A | Reset exhausted FAILED rows and drain | — |
-| GET | `/admin/sql-demo` | A | List whitelisted named queries | 403 |
-| POST | `/admin/sql-demo/{name}/run` | A | Run one whitelisted read-only query | 404 unknown, 409 not runnable |
 | GET | `/health` | public | Liveness + safety notice | — |

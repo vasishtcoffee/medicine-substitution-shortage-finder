@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { RoleGate, useAuth } from "@/lib/auth";
 import { api, fmtDate, useApi } from "@/lib/api";
-import { Feedback, Pill, SafetyNotice, Table, confirmAction } from "@/components/ui";
+import { Feedback, Pill, Table, confirmAction } from "@/components/ui";
 
 type Item = { item_id: number; requested_medicine_id: number; requested_name: string; dispensed_medicine_id: number | null; dispensed_name: string | null; quantity: number; requires_prescription?: number };
 type Order = { order_id: number; status: string; pharmacy_id: number; pharmacy_name: string; patient_name?: string; prescription_note: string | null; created_at: string; items: Item[] };
@@ -38,15 +38,14 @@ function Orders() {
   return (
     <>
       <h1>{isPatient ? "My orders" : `Orders — ${user?.pharmacy_id ? "my pharmacy" : ""}`}</h1>
-      <SafetyNotice />
       <Feedback loading={loading} error={error} success={msg.ok} />
       {msg.err && <Feedback error={msg.err} />}
       {data && data.length === 0 && <p className="muted">No orders.</p>}
       {data?.map((o) => (
         <div className="card" key={o.order_id}>
-          <h3>
+          <h2>
             Order #{o.order_id} <Pill value={o.status} /> <span className="muted">{o.pharmacy_name} · {fmtDate(o.created_at)}{o.patient_name ? ` · ${o.patient_name}` : ""}</span>
-          </h3>
+          </h2>
           {o.prescription_note && <p className="muted">Prescription note: {o.prescription_note}</p>}
           {o.items.map((it) => (
             <div key={it.item_id} className="row">

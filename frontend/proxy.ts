@@ -7,7 +7,8 @@ export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hasSession = req.cookies.has(COOKIE);
   if (pathname === "/login") {
-    return hasSession ? NextResponse.redirect(new URL("/dashboard", req.url)) : NextResponse.next();
+    // A cookie's presence does not prove it is valid. AuthProvider checks /auth/me.
+    return NextResponse.next();
   }
   if (!hasSession) return NextResponse.redirect(new URL("/login", req.url));
   if (pathname === "/") return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -15,5 +16,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/login", "/dashboard/:path*", "/search/:path*", "/orders/:path*", "/inventory/:path*", "/admin/:path*", "/feed-lab/:path*"],
+  matcher: ["/", "/login", "/dashboard/:path*", "/search/:path*", "/orders/:path*", "/inventory/:path*", "/admin/:path*"],
 };

@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
+import { useId } from "react";
 import { RoleGate } from "@/lib/auth";
 import { useApi } from "@/lib/api";
-import { Feedback, Pill } from "@/components/ui";
+import { Feedback, statusPresentation } from "@/components/ui";
 
 type Dash = {
   role: string; user: string; pharmacy?: string;
@@ -11,69 +12,64 @@ type Dash = {
 };
 
 function Stat({ label, value }: { label: string; value: number | string | undefined }) {
-  return (
-    <div className="card">
-      <div className="stat">{value ?? 0}</div>
-      <div className="muted">{label}</div>
-    </div>
-  );
+  const id = useId();
+  return <article className="card" aria-labelledby={id}>
+    <h2 id={id} className="stat-label">{label}</h2>
+    <div className="stat">{value ?? 0}</div>
+  </article>;
 }
 
 function Statuses({ title, counts }: { title: string; counts?: Record<string, number> }) {
+  const id = useId();
   const entries = Object.entries(counts ?? {});
-  return (
-    <div className="card">
-      <h3>{title}</h3>
-      {entries.length === 0 ? <p className="muted">No orders yet.</p> : entries.map(([s, n]) => <p key={s}><Pill value={s} /> {n}</p>)}
-    </div>
-  );
+  return <section className="card" aria-labelledby={id}>
+    <h2 id={id}>{title}</h2>
+    {entries.length === 0 ? <p className="muted">No orders yet.</p> : <ul className="status-list">
+      {entries.map(([s, n]) => { const status = statusPresentation(s); return <li key={s}>
+        <span aria-hidden="true">{status.symbol}</span><span>{status.label}</span><span className="status-count">{n}</span>
+      </li>; })}
+    </ul>}
+  </section>;
 }
 
 export default function DashboardPage() {
-  return (
-    <RoleGate roles={["patient", "pharmacist", "admin"]}>
-      <Dashboard />
-    </RoleGate>
-  );
+  return <RoleGate roles={["patient", "pharmacist", "admin"]}><Dashboard /></RoleGate>;
 }
 
 function Dashboard() {
   const { data, error, loading } = useApi<Dash>("/dashboard");
-  return (
-    <>
-      <h1>Dashboard{data?.pharmacy ? ` — ${data.pharmacy}` : ""}</h1>
-      <Feedback loading={loading} error={error} />
-      {data && data.role === "patient" && (
-        <>
-          <div className="grid">
-            <Statuses title="My orders" counts={data.my_orders_by_status} />
-            <Stat label="Open medicine shortages (demo data)" value={data.open_shortages} />
-          </div>
-          <p><Link href="/search">Search for a medicine</Link> · <Link href="/orders">My orders</Link></p>
-        </>
-      )}
-      {data && data.role === "pharmacist" && (
-        <>
-          <div className="grid">
-            <Statuses title="Orders at my pharmacy" counts={data.orders_by_status} />
-            <Stat label="Open low-stock alerts" value={data.open_low_stock_alerts} />
-            <Stat label="Open shortages (demo data)" value={data.open_shortages} />
-          </div>
-          <p><Link href="/orders">Review orders</Link> · <Link href="/inventory">Inventory &amp; alerts</Link></p>
-        </>
-      )}
-      {data && data.role === "admin" && (
-        <>
-          <div className="grid">
-            <Statuses title="All orders" counts={data.orders_by_status} />
-            <Stat label="Open low-stock alerts" value={data.open_low_stock_alerts} />
-            <Stat label="Open shortages" value={data.open_shortages} />
-            <Stat label="Outbox rows not yet in MongoDB" value={data.sync_pending} />
-            <Stat label="Users" value={data.users} />
-          </div>
-          <p><Link href="/admin">Catalog, shortages, users, SQL Demo</Link> · <Link href="/feed-lab">Feed Lab</Link></p>
-        </>
-      )}
-    </>
-  );
+  return <>
+    <h1>Dashboard{data?.pharmacy ? ` — ${data.pharmacy}` : ""}</h1>
+    <Feedback loading={loading} error={error} />
+    {data?.role === "patient" && <>
+      <section className="card" aria-labelledby="find-medicine"><h2 id="find-medicine">Find a medicine</h2>
+        <p className="muted">Search medicines, check pharmacy availability and request an order.</p>
+        <Link className="button primary" href="/search">Search medicines</Link>
+      </section>
+      <div className="grid"><Stat label="Open medicine shortages" value={data.open_shortages} /></div>
+      <Statuses title="My orders" counts={data.my_orders_by_status} />
+      <section className="quick-links" aria-labelledby="patient-links"><h2 id="patient-links">Quick links</h2><ul><li><Link href="/orders">My orders</Link></li></ul></section>
+    </>}
+    {data?.role === "pharmacist" && <>
+      <p><Link className="button primary" href="/orders">Review orders</Link></p>
+      <div className="grid">
+        <Stat label="Open low-stock alerts" value={data.open_low_stock_alerts} />
+        <Stat label="Open shortages" value={data.open_shortages} />
+      </div>
+      <Statuses title="Orders at my pharmacy" counts={data.orders_by_status} />
+      <section className="quick-links" aria-labelledby="pharmacy-links"><h2 id="pharmacy-links">Quick links</h2><ul><li><Link href="/inventory">Inventory &amp; alerts</Link></li></ul></section>
+    </>}
+    {data?.role === "admin" && <>
+      <div className="grid">
+        <Stat label="Open low-stock alerts" value={data.open_low_stock_alerts} />
+        <Stat label="Open shortages" value={data.open_shortages} />
+        <Stat label="Pending MongoDB sync" value={data.sync_pending} />
+        <Stat label="Users" value={data.users} />
+      </div>
+      <Statuses title="All orders" counts={data.orders_by_status} />
+      <section className="quick-links" aria-labelledby="admin-links"><h2 id="admin-links">Quick links</h2><ul>
+        <li><Link href="/admin">Catalog, shortages &amp; users</Link></li>
+      </ul></section>
+    </>}
+  </>;
 }

@@ -1,9 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 
-export const SAFETY_NOTICE =
-  "This is an educational demonstration. Candidate matches are not medical advice or an authorization to substitute a medicine. A qualified pharmacist must verify the medicine and applicable prescription requirements before any substitution or sale.";
-
 export type Role = "patient" | "pharmacist" | "admin";
 export type User = { id: number; email: string; full_name: string; role: Role; pharmacy_id: number | null };
 
@@ -30,6 +27,9 @@ export async function api<T = unknown>(path: string, init: { method?: string; bo
     /* empty body */
   }
   if (!res.ok) {
+    if (res.status === 401 && !path.startsWith("/auth/") && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("medsub:session-expired"));
+    }
     const d = data as { detail?: unknown } | null;
     const detail = typeof d?.detail === "string" ? d.detail : d?.detail ? JSON.stringify(d.detail) : res.statusText;
     throw new ApiError(res.status, detail);

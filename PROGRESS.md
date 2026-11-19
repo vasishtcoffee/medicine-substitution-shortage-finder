@@ -1,31 +1,11 @@
-# PROGRESS
+# Current project status — 19 November 2026
 
-## Status: P1–P7 implemented; gates passed except items listed under "Not executed here".
+Branch polish/viva-eight-phases, based on initial import a826eaf.
 
-### Environment probe (2026-10-15, Windows 11)
-Python 3.12.3 ✔ · Node 24 ✔ · MySQL **8.0.33** local service (root access given by the user) ✔ · git ✔ · **Docker ✘** · MongoDB was absent at first; a portable MongoDB 7.0.14 zip was later downloaded (user-approved) to `.tools/` and used.
-Fields in the prompt left as `<fill>` (members, repo name) were not guessed; students' OS = Windows.
+Phases 1–6 implemented and committed separately. Phase 7 includes two browser-reproduced search fixes and three regression tests; browser verification is **partial**, stopped by Computer Use at a native confirmation. Phase 8 updates startup, environment, viva, testing, rubric and contribution documentation.
 
-### Phases
-| Phase | State | Evidence |
-|---|---|---|
-| P1 skeleton, compose, ER, coverage | done | `docker-compose.yml` written but **not run** (no Docker); ER diagram generated and checked |
-| P2 schema, seed, roles | done | migrations load twice; 31 constraint/trigger tests pass |
-| P3 SQL library | done | `database/sql/*`, outputs in `docs/sql_output`; concurrency test passes (5/5 reruns) |
-| P4 FastAPI | done | 22 API tests, OpenAPI served, RBAC tests at API + DB level |
-| P5 outbox + Mongo | done | mongomock (105 pass) and real MongoDB 7.0.14 (14/14 nosql pass); init_mongo idempotent |
-| P6 Next.js | done | lint, tsc, build, vitest pass; browser spot-checked |
-| P7 docs | done | `docs/*`, honest `TESTING.md` |
+Observed Phase 6: 110 real backend, 3 separate Mongo failure-stub and 14 frontend tests passed; 0 failed/skipped. Phase 7 frontend: 17 passed. Audit still fails (8 moderate, 2 critical affected development-tool packages). Final results: docs/TESTING.md.
 
-### Not executed here
-* `docker compose up` (MySQL 8.4 + MongoDB 7).
-* Full patient→pharmacist→sale flow clicked through in the browser (API-level equivalent passes).
-* No Git repository/commits exist; Member A/B names are not filled in.
+Real MySQL 8.0.33 and MongoDB 8.2.1 used dedicated V: data folders. Full-command test databases were uniquely named and cleaned up; no task shutdown targeted shared services. Native mysql scripts ran; mongosh was unavailable. No full WCAG, screen-reader, real-device, 200% zoom or completed browser sale-flow claim is made.
 
-### Decisions (see docs/DESIGN.md §6)
-Locking read in `sp_complete_order`; fourth role for auth lookups; context via `fn_ctx_*`; per-event triggers; local MySQL 8.0.33 with 8.4 in compose; `proxy.ts`.
-
-### Next
-1. Install Docker Desktop (or MongoDB Community), run the not-executed items above.
-2. Fill `docs/TEAM_CONTRIBUTIONS.md`, create the repo, each member commits/PRs their slice.
-3. Optionally export the ER diagram as an image.
+See docs/BROWSER_VERIFICATION.md, docs/DEPENDENCY_REVIEW.md, tests/TESTS_EXPLAINED.md, viva/README.md and docs/RUBRIC_COVERAGE.md. Contribution evidence remains incomplete. The original polishing run did not push/deploy/merge; subsequent sharing instructions are in docs/TEAMMATE_HANDOFF.md. ER diagram work was excluded.

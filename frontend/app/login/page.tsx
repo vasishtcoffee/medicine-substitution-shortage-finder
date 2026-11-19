@@ -1,16 +1,20 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import { Feedback, SafetyNotice } from "@/components/ui";
+import { Feedback } from "@/components/ui";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (user) router.replace("/dashboard");
+  }, [user, router]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -29,7 +33,6 @@ export default function LoginPage() {
   return (
     <div className="login card">
       <h1>Sign in</h1>
-      <SafetyNotice />
       <form onSubmit={submit}>
         <div className="row">
           <label>
@@ -44,7 +47,7 @@ export default function LoginPage() {
         </div>
       </form>
       <Feedback error={error} />
-      <p className="muted">Local demo only. Demo logins are listed in the README (admin@, pharmacist1@, patient1@ medsub.demo).</p>
+      <p className="muted">Demo logins are listed in the README (admin@, pharmacist1@, patient1@ medsub.demo).</p>
     </div>
   );
 }

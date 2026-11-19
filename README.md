@@ -1,130 +1,104 @@
 # Medicine Substitution & Shortage Finder
 
-DBMS Level 3 mini-project (PES University, Aug–Dec 2026): find in-stock medicines and **pharmacist-verified composition-matching** candidates when a medicine is short.
+Academic DBMS project: search medicines and pharmacy availability, inspect exact composition-matching candidates, request an order, and let an assigned pharmacist review and complete it. MySQL owns stock/orders; MongoDB holds the eventually consistent feed/events.
 
-> **Safety notice.** This is an educational demonstration. Candidate matches are not medical advice or an authorization to substitute a medicine. A qualified pharmacist must verify the medicine and applicable prescription requirements before any substitution or sale. All data is synthetic; shortages are demo records, not live or official data.
+This is an academic test project not intended for clinical use.
+
+## Teammate checkout
+
+The updated project is on branch **polish/viva-eight-phases**. Start with [teammate handoff](docs/TEAMMATE_HANDOFF.md) for checkout commands, setup, verification results and remaining work.
 
 ## Stack
 
-| Layer | Technology |
+MySQL 8/InnoDB, raw parameterized SQL, constraints/views/procedures/functions/triggers and database roles; MongoDB validators/indexes with outbox sync; FastAPI/Python 3.11+; Next.js 16.4.5 App Router, React 19.3.1 and TypeScript. The UI stays dark navy with coral primary actions.
+
+## Setup and reliable startup (Windows PowerShell)
+
+Use dedicated local databases/accounts. From the repository root:
+
+    py -3.12 -m venv .venv
+    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+    Copy-Item .env.example .env
+
+Edit .env for actual local server ports, database/account names and passwords. Start MySQL/MongoDB yourself, or use docker compose up -d if Docker is installed; choose free ports.
+
+Only for a new dedicated app database:
+
+    .\.venv\Scripts\python.exe scripts\bootstrap_db.py
+    .\.venv\Scripts\python.exe scripts\migrate.py
+    .\.venv\Scripts\python.exe scripts\seed.py
+    .\.venv\Scripts\python.exe scripts\init_mongo.py
+
+**Mutation scope:** bootstrap creates the selected schema, configures/updates the named server accounts/roles and attempts to set log_bin_trust_function_creators. Migrations create/replace objects in that schema. Seed resets its demo stock and inserts synthetic fixtures. Mongo initialization creates/updates the selected collections, validators and indexes. Name/review the target first. Setup/reset is separate from routine startup.
+
+Terminal 1, repository root:
+
+    .\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
+
+Terminal 2:
+
+    cd frontend
+    npm ci
+    $env:BACKEND_URL='http://127.0.0.1:8000'
+    npm run dev
+
+UI: [localhost:3000](http://localhost:3000). Backend tools: [localhost:8000/docs](http://localhost:8000/docs); POST /auth/login before protected requests. Browser calls use same-origin /api rewrites. Next never holds SQL credentials. Use explicit virtual-environment Python: the Windows Store python alias may not run Python.
+
+For production-mode local testing, set BACKEND_URL **before building**, then npm run build and npm run start -- --hostname 127.0.0.1. Override ports with --port. The observed production browser run used API 8011 and UI 3011; startup and build completed with those overrides.
+
+Stop foreground servers with Ctrl+C. Legacy start_demo.ps1 bootstraps/seeds automatically and stop_demo.ps1 stops port owners without ownership checks. They were not used here; prefer the explicit commands above and do not run those legacy scripts against shared services.
+
+## Environment
+
+Copy .env.example; keep .env and frontend/.env.local untracked.
+
+| Variables | Purpose |
 |---|---|
-| Relational (authoritative) | MySQL 8 (InnoDB, utf8mb4), plain `.sql` migrations, **raw parameterised SQL**, roles/grants, stored procedures/functions/triggers |
-| NoSQL | MongoDB (inventory feed + event log) via outbox sync |
-| Backend | FastAPI (Python 3.11+), `mysql-connector-python` pools, `pymongo`, argon2, JWT in an httpOnly cookie |
-| Frontend | Next.js 16 (App Router) + TypeScript; browser calls only `/api/*` (rewrite to FastAPI) |
-| Vector DB | deliberately not used (see `docs/DESIGN.md` §3) |
+| MYSQL_HOST/PORT/DATABASE | Authoritative app database |
+| MYSQL_ROOT_USER/PASSWORD | Bootstrap only |
+| MIGRATOR_USER/PASSWORD, DEFINER_USER, APP_ACCOUNT_HOST | Schema account and locked routine definer |
+| PATIENT_SVC_*, PHARMACIST_SVC_*, ADMIN_SVC_*, AUTH_SVC_* | Separate limited runtime SQL accounts |
+| MONGO_URI, MONGO_DATABASE | Feed/event database |
+| JWT_SECRET, JWT_EXPIRE_MINUTES, COOKIE_SECURE | Signed httpOnly cookie; long secret and HTTPS/secure cookies outside local HTTP |
+| SYNC_INTERVAL_SECONDS, SYNC_MAX_ATTEMPTS, SYNC_BACKGROUND | Outbox processing; background defaults on |
+| DEMO_ADMIN_PASSWORD, DEMO_PHARMACIST_PASSWORD, DEMO_PATIENT_PASSWORD | Seed login passwords |
+| BACKEND_URL (frontend) | Backend origin; set before production build |
 
-## Prerequisites
+## Synthetic demo logins
 
-Python 3.11+, Node 20+, and **either** Docker Desktop **or** a local MySQL 8.x and MongoDB 7. Repo docs: [`docs/`](docs/).
+Passwords are your DEMO_*_PASSWORD values. The change-me-* values in .env.example are placeholders, not claims about an existing installation.
 
-## Setup (Windows PowerShell; bash equivalents in the comments)
+| Role | Email | Pharmacy |
+|---|---|---|
+| Admin | admin@medsub.demo | All |
+| Pharmacist | pharmacist1@medsub.demo | City Care (1) |
+| Pharmacist | pharmacist2@medsub.demo | Green Cross (2) |
+| Patient | patient1@medsub.demo, patient2@medsub.demo | Selected per request |
 
-```powershell
-# 1. environment
-Copy-Item .env.example .env          # cp .env.example .env     -> then edit passwords (local demo values only)
-pip install -r requirements.txt
+## Verification
 
-# 2. databases (Docker)            -> if MySQL is already installed on 3306, set MYSQL_PORT=3307 in .env first
-docker compose up -d                 # MySQL 8.4 + MongoDB 7 (healthchecks)
-# ...or use your local MySQL/MongoDB and set MYSQL_ROOT_PASSWORD / MONGO_URI in .env
+    .\.venv\Scripts\python.exe scripts\check_all.py
 
-# 3. create DB, accounts, roles (needs MySQL root once), schema, demo data, Mongo collections
-python scripts/bootstrap_db.py
-python scripts/migrate.py            # idempotent; safe to re-run
-python scripts/seed.py               # idempotent; resets demo stock to the seeded values
-python scripts/init_mongo.py         # idempotent
+This command requires V: and real MySQL/MongoDB server executables; set MYSQLD_EXE/MONGOD_EXE for other binary locations. It starts its own servers on V:, creates unique test databases, refuses pre-existing names, prints exact cleanup scope and stops only owned processes. Missing services produce blocked/nonzero results. Individual test counts and exclusions are separate from lint/typecheck/contrast/build/audit checks. Logs/JSON are under work/checks_<run>/.
 
-# 4. run
-python -m uvicorn app.main:app --app-dir backend --port 8000        # API + OpenAPI at http://localhost:8000/docs
-cd frontend; npm install; npm run dev                                # UI at http://localhost:3000
-```
+Final full command: **130 passed, 0 failed, 0 skipped** (110 real backend + 3 separate fault-injection stubs + 17 frontend). The three stubs were excluded from the real-server invocation and then executed separately. See [current results](docs/TESTING.md). Audit remains failing: 8 moderate and 2 critical affected development-tool packages; Next no longer appears in that audit.
 
-Open <http://localhost:3000>. The API's background worker pushes stock changes to MongoDB every `SYNC_INTERVAL_SECONDS`; the Feed Lab has a **Run sync** button.
+[Test explanations](tests/TESTS_EXPLAINED.md), [dependency review](docs/DEPENDENCY_REVIEW.md), [browser evidence/limits](docs/BROWSER_VERIFICATION.md). Browser control stopped at a native confirmation because the current Windows URL could not be determined confidently. Full browser workflow, 200% zoom, keyboard traversal, screen readers and real devices remain unverified. API/DB tests are separate evidence.
 
-## Environment variables (`.env.example` lists all)
+## Viva and structure
 
-`MYSQL_HOST/PORT/DATABASE`, `MYSQL_ROOT_USER/PASSWORD` (bootstrap only), `MIGRATOR_*`, `DEFINER_USER`, `PATIENT_SVC_* / PHARMACIST_SVC_* / ADMIN_SVC_* / AUTH_SVC_*` (one DB account per role), `MONGO_URI`, `MONGO_DATABASE`, `JWT_SECRET`, `JWT_EXPIRE_MINUTES`, `COOKIE_SECURE`, `SYNC_INTERVAL_SECONDS`, `SYNC_MAX_ATTEMPTS`, `DEMO_*_PASSWORD`. `BACKEND_URL` (frontend, default `http://127.0.0.1:8000`).
+Use [native database viva scripts](viva/README.md) and [short demonstration sequence](docs/VIVA_COMMANDS.md). Feed Lab and the in-app SQL Demo are removed. Admin feed/event APIs and sync recovery remain operational. Native mysql scripts were exercised; mongosh was unavailable, so its script remains unexecuted.
 
-## Demo logins (local only; passwords are the `DEMO_*_PASSWORD` values in `.env`)
-
-| Role | Email |
+| Location | Purpose |
 |---|---|
-| admin | `admin@medsub.demo` |
-| pharmacist (City Care, pharmacy 1) | `pharmacist1@medsub.demo` |
-| pharmacist (Green Cross, pharmacy 2) | `pharmacist2@medsub.demo` |
-| patient | `patient1@medsub.demo`, `patient2@medsub.demo` |
+| database/migrations, database/seed, database/sql | Existing SQL schema, fixtures and query library |
+| backend/app | FastAPI, role-specific pools, MongoDB/outbox |
+| frontend/app | Login, dashboard, search, orders, inventory, admin |
+| frontend/components | Shared shell, feedback, statuses and tables |
+| viva/mysql, viva/mongodb | Native DDL/DML/queries/routines/triggers/denials and isolated Mongo CRUD |
+| tests | SQL, security, API, MongoDB and plain-language explanations |
+| scripts/check_all.py | Full check command with owned real services on V: |
 
-Follow [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
+## Limits
 
-## Tests
-
-```powershell
-python -m pytest tests -q               # SQL, security, API, NoSQL (uses throw-away DB medsub_test; mongomock unless MONGO_TEST_URI is set)
-python scripts/check_schema_docs.py     # ER diagram vs live schema
-python scripts/run_sql_demo.py database/sql/queries.sql
-cd frontend; npm run lint; npm run typecheck; npm run build; npm test
-```
-
-Results and what was **not** run: [`docs/TESTING.md`](docs/TESTING.md). Rubric evidence: [`docs/RUBRIC_COVERAGE.md`](docs/RUBRIC_COVERAGE.md).
-
-## Layout
-
-```
-database/migrations   V001, V002 (once) and R__* (routines, views, triggers, grants; re-applied)
-database/seed         S001_seed.sql (+ scripts/seed.py for users/hashes)
-database/sql          dml_demo.sql, queries.sql, advanced.sql  (named, labelled demos)
-scripts               bootstrap_db, migrate, seed, init_mongo, run_sql_demo, check_schema_docs
-backend/app           FastAPI (routers per domain), db.py, security.py, sync.py, mongo.py
-frontend/src          Next.js app (7 screens), proxy.ts, lib/, components/
-tests                 sql/, security/, api/, nosql/
-docs                  DESIGN, SQL_REFERENCE, NOSQL, SECURITY_RBAC, API, TESTING, RUBRIC_COVERAGE, DEMO_SCRIPT, VIVA_GUIDE, TEAM_CONTRIBUTIONS
-```
-
-## Limitations
-
-* MySQL has **no native row-level security**: row scoping uses restricted views, definer stored procedures and a trusted request context (credentials stay backend-only).
-* No FEFO batch depletion (batch/expiry only on receipt ledger rows); stateless JWT (logout clears the cookie; no server-side revocation); keyword-only search (no semantic matching); MongoDB is eventually consistent; educational synthetic data only.
-* Verified on MySQL 8.0.33; MySQL 8.4 (compose) was not available in the development environment; MongoDB was verified on a locally run 7.0.14 — see `docs/TESTING.md`.
-
-## Viva / demo material
-
-| What | Where |
-|---|---|
-| Hard-copy ER diagram, relational schema, strong/weak/associative entities, attribute types | `docs/ER_AND_SCHEMA_PRINT.html` (open, Ctrl+P, landscape); image `docs/ER_diagram.svg`; regenerate `python scripts/build_er_print.py` |
-| All DDL and all DML in two files | `submission/01_DDL.sql`, `submission/02_DML.sql`; regenerate `python scripts/build_submission_sql.py` |
-| 5-minute talk + CRUD checklist | `docs/VIVA_PRESENTATION.md` |
-| `SHOW CREATE …`, live trigger/procedure demos, UI-CRUD-to-SQL verification | `docs/VIVA_COMMANDS.md` |
-| Where every procedure/function/trigger/query is defined and used (file:line, API, screen) | `docs/CODE_MAP.md`; regenerate `python scripts/build_code_map.py` |
-| One command to start MySQL check, MongoDB, API, UI | `powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1` (stop: `scripts\stop_demo.ps1`) |
-
-## Frontend structure (matches the course template)
-
-```
-frontend/                      (the "MyApp")
-├── app/
-│   ├── page.tsx               home: redirects to /dashboard
-│   ├── login, dashboard, search, orders, inventory, admin, feed-lab   (the 7 screens, each a page.tsx)
-│   └── api/
-│       └── hello/
-│           └── route.ts       Next.js route handler: GET /api/hello (browser → Next → FastAPI → MySQL check)
-├── lib/
-│   ├── db.ts                  server-side connection pool (keep-alive pool to the backend that owns MySQL)
-│   ├── mongo.ts               NoSQL connection helper (the template's redis.ts; this project uses MongoDB)
-│   ├── api.ts, auth.tsx       browser-side API client and auth context
-├── components/                shared UI (Header, SafetyNotice, Table, …)
-├── proxy.ts                   redirects unauthenticated users to /login
-├── .env.local                 BACKEND_URL (git-ignored; copy .env.local.example)
-└── package.json               dependencies and commands (dev, build, lint, test)
-```
-
-| File | Responsibility |
-|---|---|
-| `app/page.tsx` etc. | Display the user interface |
-| `app/api/hello/route.ts` | Handles the API request `GET /api/hello`; every other `/api/*` call is rewritten to FastAPI (`next.config.ts`) |
-| `lib/db.ts` | Creates the connection pool to the backend that owns the MySQL pools |
-| `lib/mongo.ts` | Connects to the MongoDB feed (through the backend) |
-| `.env.local` | Stores local connection settings (`BACKEND_URL`) |
-| `package.json` | Defines dependencies and commands |
-
-MySQL and MongoDB are opened only by the FastAPI backend (`backend/app/db.py`, `mongo.py`): the database-level role design requires that Next.js never holds database credentials.
+MySQL has no native row-level security: grants, definer views/procedures and trusted backend request context implement scoping. JWT logout clears a cookie without token revocation. Search is keyword-based; no FEFO depletion; MongoDB is eventually consistent. Exercised MySQL 8.0.33 and MongoDB 8.2.1; Docker/MySQL 8.4 and full WCAG conformance are unverified. [Rubric status](docs/RUBRIC_COVERAGE.md) excludes ER-diagram work and awards no marks. [Contributions](docs/TEAM_CONTRIBUTIONS.md) require evidence beyond git author metadata.

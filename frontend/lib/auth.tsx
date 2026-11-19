@@ -12,6 +12,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    const recover = () => {
+      setUser(null);
+      router.replace("/login");
+    };
+    window.addEventListener("medsub:session-expired", recover);
+    return () => window.removeEventListener("medsub:session-expired", recover);
+  }, [router]);
+
+  useEffect(() => {
     api<User>("/auth/me")
       .then(setUser)
       .catch(() => setUser(null))
