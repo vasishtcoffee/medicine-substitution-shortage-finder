@@ -15,7 +15,8 @@ Do not use your normal application data. Passwords come from your local environm
 |---|---|---|
 | Catalog and composition | `database/migrations/V001__core_schema.sql`, `V002__alter_constraints.sql` | 01 DDL; 02 DML/cascade/rollback |
 | Search, availability and candidate ranking | `R__10_context_and_guards.sql`, `R__40_candidates.sql`, `backend/app/routers/search.py` | 03 joins/aggregates/CTEs/functions/procedure |
-| Stock alerts and outbox | `R__30_triggers.sql`, `backend/app/sync.py` | 04 triggers |
+| Stock alerts | `R__30_triggers.sql` | 04 triggers |
+| Transactional outbox and sync | `R__50_workflow.sql`, `backend/app/sync.py` | sale/rollback integration tests; Mongo feed inspection |
 | Database RBAC | `R__90_grants.sql`, `backend/app/db.py` | 05 separate limited connection |
 | Feed/events | `backend/app/mongo.py`, `sync.py`, `routers/feed.py` | MongoDB 01 CRUD |
 

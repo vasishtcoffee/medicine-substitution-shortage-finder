@@ -2,8 +2,6 @@
 import re
 from pathlib import Path
 
-from app.main import app
-
 DOC = Path(__file__).resolve().parents[2] / "docs" / "API.md"
 
 

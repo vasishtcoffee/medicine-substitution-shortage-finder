@@ -3,7 +3,7 @@ MySQL error numbers: 1142 table/view access denied, 1370 routine EXECUTE denied,
 import mysql.connector
 import pytest
 
-from support import direct, migrator
+from support import TEST_DB, direct, migrator
 from helpers import call, scalar
 
 
@@ -50,7 +50,7 @@ def test_patient_procedure_cannot_be_pointed_at_another_owner(reset_data):
 def test_patient_never_gets_exact_quantities():
     p = direct("patient", 4, "patient")
     cols = {r["COLUMN_NAME"] for r in call(migrator(), "SELECT COLUMN_NAME FROM information_schema.columns "
-                                                       "WHERE table_schema='medsub_test' AND table_name='v_availability'")}
+                                                       f"WHERE table_schema='{TEST_DB}' AND table_name='v_availability'")}
     assert "quantity" not in cols and "reorder_level" not in cols
     rows = call(p, "SELECT * FROM v_availability")
     assert rows and set(rows[0]) == {"pharmacy_id", "pharmacy_name", "medicine_id", "availability"}
@@ -161,4 +161,4 @@ def test_definer_account_cannot_log_in():
     import os
     with pytest.raises(mysql.connector.Error):
         mysql.connector.connect(host=config.MYSQL_HOST, port=config.MYSQL_PORT, user=os.environ["DEFINER_USER"],
-                                password="anything", database="medsub_test")
+                                password="anything", database=TEST_DB)

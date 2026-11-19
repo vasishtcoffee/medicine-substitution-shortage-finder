@@ -5,7 +5,7 @@ import mysql.connector
 
 import migrate
 
-TEST_DB = "medsub_test"
+TEST_DB = os.environ["MYSQL_DATABASE"]
 
 
 def direct(kind, user_id=None, role=None, pharmacy_id=None):
