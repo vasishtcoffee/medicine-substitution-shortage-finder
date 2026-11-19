@@ -66,14 +66,19 @@ Copy .env.example; keep .env and frontend/.env.local untracked.
 
 ## Synthetic demo logins
 
-Passwords are your DEMO_*_PASSWORD values. The change-me-* values in .env.example are placeholders, not claims about an existing installation.
+These synthetic accounts use the following passwords when seeded with the defaults in `.env.example`. All five logins were verified against the local preview on 19 November 2026.
 
-| Role | Email | Pharmacy |
-|---|---|---|
-| Admin | admin@medsub.demo | All |
-| Pharmacist | pharmacist1@medsub.demo | City Care (1) |
-| Pharmacist | pharmacist2@medsub.demo | Green Cross (2) |
-| Patient | patient1@medsub.demo, patient2@medsub.demo | Selected per request |
+| Role | Email | Default demo password | Pharmacy |
+|---|---|---|---|
+| Admin | `admin@medsub.demo` | `change-me-demo-admin` | All |
+| Pharmacist | `pharmacist1@medsub.demo` | `change-me-demo-pharmacist` | City Care (1) |
+| Pharmacist | `pharmacist2@medsub.demo` | `change-me-demo-pharmacist` | Green Cross (2) |
+| Customer / patient | `patient1@medsub.demo` | `change-me-demo-patient` | Selected per request |
+| Customer / patient | `patient2@medsub.demo` | `change-me-demo-patient` | Selected per request |
+
+The actual passwords come from `DEMO_ADMIN_PASSWORD`, `DEMO_PHARMACIST_PASSWORD` and `DEMO_PATIENT_PASSWORD` in the backend's local `.env` when `scripts/seed.py` runs. If those values were changed before seeding, use those configured values instead. New users created through Admin sign in with the password entered in their creation form.
+
+Sign in on the frontend connected to the intended backend/database; another running local instance may have different credentials. Website passwords are separate from MySQL connection passwords (`MIGRATOR_USER` / `MIGRATOR_PASSWORD`). Keep real credentials and `.env` untracked; the values above are public local-demo defaults.
 
 ## Verification
 
