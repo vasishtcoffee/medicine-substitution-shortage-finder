@@ -20,8 +20,8 @@ function Admin() {
   return (
     <>
       <h1>Admin</h1>
-      <div className="tabs" role="tablist">
-        {tabs.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>)}
+      <div className="tabs" role="group" aria-label="Administration sections">
+        {tabs.map(([k, l]) => <button key={k} aria-pressed={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>)}
       </div>
       {tab === "catalog" && <Catalog />}
       {tab === "pharmacies" && <Pharmacies />}
@@ -74,7 +74,7 @@ function Catalog() {
         is_active: !!d.is_active, ingredients: d.ingredients.map((i) => ({ ingredient_id: i.ingredient_id, strength_mg: Number(i.strength_mg) })),
       });
       setEditId(m.id);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     } catch (err) {
       setMsg({ err: (err as Error).message });
     }

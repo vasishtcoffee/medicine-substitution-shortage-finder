@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { RoleGate, useAuth } from "@/lib/auth";
 import { api, useApi } from "@/lib/api";
 import { Feedback, Pill, Table, confirmAction } from "@/components/ui";
@@ -39,32 +39,47 @@ function Search() {
   const [candLoading, setCandLoading] = useState(false);
   const [candError, setCandError] = useState<string | null>(null);
   const [orderFor, setOrderFor] = useState<{ id: number; name: string } | null>(null);
+  const searchVersion = useRef(0);
+  const candidateVersion = useRef(0);
+
+  function clearCandidates() {
+    candidateVersion.current += 1;
+    setCands(null);
+    setCandError(null);
+    setCandLoading(false);
+  }
 
   async function run(e?: FormEvent) {
     e?.preventDefault();
+    const version = ++searchVersion.current;
     setLoading(true);
     setError(null);
-    setCands(null);
+    setResults(null);
+    setOrderFor(null);
+    clearCandidates();
     try {
       const r = await api<{ results: Med[] }>(`/search?q=${encodeURIComponent(q)}`);
-      setResults(r.results);
+      if (version === searchVersion.current) setResults(r.results);
     } catch (err) {
-      setError((err as Error).message);
+      if (version === searchVersion.current) setError((err as Error).message);
     } finally {
-      setLoading(false);
+      if (version === searchVersion.current) setLoading(false);
     }
   }
 
   async function findSubstitutes(m: { id: number }) {
+    const version = ++candidateVersion.current;
+    setCands(null);
     setCandLoading(true);
     setCandError(null);
     try {
       const ph = pharmacyId === "" ? "" : `?pharmacy_id=${pharmacyId}`;
-      setCands(await api<Cands>(`/search/candidates/${m.id}${ph}`));
+      const result = await api<Cands>(`/search/candidates/${m.id}${ph}`);
+      if (version === candidateVersion.current) setCands(result);
     } catch (err) {
-      setCandError((err as Error).message);
+      if (version === candidateVersion.current) setCandError((err as Error).message);
     } finally {
-      setCandLoading(false);
+      if (version === candidateVersion.current) setCandLoading(false);
     }
   }
 
@@ -78,7 +93,7 @@ function Search() {
         </label>
         <label>
           My pharmacy (for ranking)
-          <select value={pharmacyId} onChange={(e) => setPharmacyId(e.target.value ? Number(e.target.value) : "")}>
+          <select value={pharmacyId} onChange={(e) => { setPharmacyId(e.target.value ? Number(e.target.value) : ""); clearCandidates(); }}>
             <option value="">— any —</option>
             {pharmacies.data?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
