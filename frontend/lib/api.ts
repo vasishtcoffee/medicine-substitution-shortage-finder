@@ -27,6 +27,9 @@ export async function api<T = unknown>(path: string, init: { method?: string; bo
     /* empty body */
   }
   if (!res.ok) {
+    if (res.status === 401 && !path.startsWith("/auth/") && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("medsub:session-expired"));
+    }
     const d = data as { detail?: unknown } | null;
     const detail = typeof d?.detail === "string" ? d.detail : d?.detail ? JSON.stringify(d.detail) : res.statusText;
     throw new ApiError(res.status, detail);

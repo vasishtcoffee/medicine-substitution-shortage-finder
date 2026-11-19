@@ -44,7 +44,7 @@ def get_identity(request: Request) -> db.Identity:
     try:
         data = decode_token(token)
         user_id = int(data["sub"])
-    except (jwt.PyJWTError, KeyError, ValueError):
+    except (jwt.PyJWTError, KeyError, ValueError, TypeError):
         raise HTTPException(401, "Invalid or expired session")
     with db.session("auth") as cnx:
         rows = db.call_one(cnx, "sp_auth_identity", (user_id,))
